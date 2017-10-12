@@ -52,6 +52,9 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
+// From module: ADC - Analog-to-digital Converter
+#include <adc.h>
+
 // From module: Common SAM compiler driver
 #include <compiler.h>
 #include <status_codes.h>
@@ -61,6 +64,16 @@
 
 // From module: Delay routines
 #include <delay.h>
+
+// From module: FreeRTOS - PDC Interface Layer
+#include <freertos_peripheral_control.h>
+#include <freertos_peripheral_control_private.h>
+
+// From module: FreeRTOS - TWI Interface Layer
+#include <freertos_twi_master.h>
+
+// From module: FreeRTOS - UART Interface Layer
+#include <freertos_uart_serial.h>
 
 // From module: FreeRTOS mini Real-Time Kernel
 #include <FreeRTOS.h>
@@ -85,6 +98,9 @@
 // From module: Interrupt management - SAM implementation
 #include <interrupt.h>
 
+// From module: PDC - Peripheral DMA Controller Example
+#include <pdc.h>
+
 // From module: PIO - Parallel Input/Output Controller
 #include <pio.h>
 
@@ -92,11 +108,32 @@
 #include <pmc.h>
 #include <sleep.h>
 
+// From module: PWM - Pulse Width Modulation
+#include <pwm.h>
+
 // From module: Part identification macros
 #include <parts.h>
 
 // From module: System Clock Control - SAM4S implementation
 #include <sysclk.h>
+
+// From module: TWI - Two-Wire Interface - SAM implementation
+#include <sam_twi/twi_master.h>
+#include <sam_twi/twi_slave.h>
+#include <twi_master.h>
+#include <twi_slave.h>
+
+// From module: TWI - Two-wire Interface
+#include <twi.h>
+
+// From module: UART - Univ. Async Rec/Trans
+#include <uart.h>
+
+// From module: USART - Serial interface - SAM implementation for devices with both UART and USART
+#include <serial.h>
+
+// From module: USART - Univ. Syn Async Rec/Trans
+#include <usart.h>
 
 // From module: pio_handler support enabled
 #include <pio_handler.h>

@@ -4,12 +4,15 @@
 #define LED_PIO		PIOC
 
 #include <asf.h>
+#include "conf_board.h"
+#include "conf_clock.h"
 // /* RTOS includes. */
+#include "FreeRTOS.h"
 #include "task.h"
 // /* App Includes */
 // #include "ChargeCtrl.h"
-// #include "PvTracker.h"
-// #include "CommInterface.h"
+#include "PvTracker.h"
+#include "CommInterface.h"
 
 /* Function Declarations */
 /* Installs the RTOS interrupt handlers and starts the peripherals. */
@@ -18,38 +21,42 @@ void vInitPeripherals(void);
 /* RTOS Task Declarations*/
 void vBlinkTask(void *pvParameters);
 
+/*	*** Updates ***
+	Modified MCK settings to:
+		PLLA SRC = external XTAL.
+		PLLA MUL = 20.
+		PLLA DIV = 1.
+		MCK SRC = PLLA Out = 240/2 = 120MHz.
+
+	Added RS485, Modbus, TWI, NVM, DS3231RTOS and ICM20648RTOS libraries.
+	Ported Tracker and Modbus Tasks.
+	Code untested. 
+
+*/
+
 int main (void)
 {
 	/* Insert system clock initialization code here (sysclk_init()). */
 	sysclk_init();
-	/* There is nothing in board_init() as it is a custom board, hence we call this*/
+
+	/* Initialize all peripherals */
+	board_init();
+	delay_init(sysclk_get_cpu_hz());
+
 	vInitPeripherals();
     
     /* Enable global interrupts. */   
     
 //     xTaskCreate(vCCTask, "Cc", 100, NULL, 2, NULL);
-//     xTaskCreate(vPvTrackerTask, "Pv", 300, NULL, 1, NULL);
-//     xTaskCreate(vCommTask, "Comm", 512, NULL, 1, NULL);
-	   xTaskCreate(vBlinkTask, "Blinky", 100, NULL, 1, NULL);
+    xTaskCreate(vPvTrackerTask, (const signed char *)"Pv", 300, NULL, 1, NULL);
+    xTaskCreate(vCommTask, (const signed char *)"Comm", 512, NULL, 1, NULL);
+	xTaskCreate(vBlinkTask, (const signed char *)"Blinky", 100, NULL, 1, NULL);
     
     /* Start Watchdog Timer */
         
-    /*HB_RST_Write(1);
-    PWM0_Start();
-    PWM0_WriteCompare(1023);
-    PwmSelReg_Write(0);
-    while(1);*/
-    
     vTaskStartScheduler();
     
 	for( ;; );
-	{
-		/*gpio_set_pin_high(PIO_PC23_IDX);
-		delay_ms(1000);
-		gpio_set_pin_low(PIO_PC23_IDX);
-		delay_ms(1000);*/
-	}
-	
 }
 
 // void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
@@ -68,32 +75,25 @@ void vApplicationMallocFailedHook( void )
 
 void vInitPeripherals( void )
 {
-// 	#if defined(DEBUG_EN) || defined(LOG_EN)
-// 		Debug_Start();
-// 	#endif
+	#if defined(DEBUG_EN) || defined(LOG_EN)
+		Debug_Start();
+	#endif
 	
-	//CyDelay(1000);
+	delay_ms(1000);
 	
 	/* Initialize all RTOS vars */
-// 	vCCInit();
-// 	vPvTrackerInit();
-// 	vCommInit();
-
-	gpio_configure_pin(PIO_PC23_IDX, (PIO_OUTPUT_1 | PIO_DEFAULT));
-
+	//vCCInit();
+	vPvTrackerInit();
+	vCommInit();
 }
 
 void vBlinkTask( void *pvParameters )
 {
 	while(1)
 	{
-		//LED1_Write(1);
-		gpio_set_pin_high(PIO_PC23_IDX);
-		//UART0_PutChar('A');
+		gpio_set_pin_high(PIN_DEBUGLED_IDX);
 		vTaskDelay(500);
-		//LED1_Write(0);
-		gpio_set_pin_low(PIO_PC23_IDX);
-		//Debug_PutChar('A');
+		gpio_set_pin_low(PIN_DEBUGLED_IDX);
 		vTaskDelay(500);
 	}
 }

@@ -52,9 +52,6 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
-// From module: ADC - Analog-to-digital Converter
-#include <adc.h>
-
 // From module: Common SAM compiler driver
 #include <compiler.h>
 #include <status_codes.h>
@@ -65,6 +62,12 @@
 // From module: Delay routines
 #include <delay.h>
 
+// From module: EEFC - Enhanced Embedded Flash Controller
+#include <efc.h>
+
+// From module: Flash - SAM Flash Service API
+#include <flash_efc.h>
+
 // From module: FreeRTOS - PDC Interface Layer
 #include <freertos_peripheral_control.h>
 #include <freertos_peripheral_control_private.h>
@@ -72,8 +75,8 @@
 // From module: FreeRTOS - TWI Interface Layer
 #include <freertos_twi_master.h>
 
-// From module: FreeRTOS - UART Interface Layer
-#include <freertos_uart_serial.h>
+// From module: FreeRTOS - USART Interface Layer
+#include <freertos_usart_serial.h>
 
 // From module: FreeRTOS mini Real-Time Kernel
 #include <FreeRTOS.h>
@@ -95,8 +98,14 @@
 // From module: Generic board support
 #include <board.h>
 
+// From module: IOPORT - General purpose I/O service
+#include <ioport.h>
+
 // From module: Interrupt management - SAM implementation
 #include <interrupt.h>
+
+// From module: NVM - Non volatile memory access
+#include <common_nvm.h>
 
 // From module: PDC - Peripheral DMA Controller Example
 #include <pdc.h>
@@ -107,9 +116,6 @@
 // From module: PMC - Power Management Controller
 #include <pmc.h>
 #include <sleep.h>
-
-// From module: PWM - Pulse Width Modulation
-#include <pwm.h>
 
 // From module: Part identification macros
 #include <parts.h>

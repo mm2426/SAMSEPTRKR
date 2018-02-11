@@ -12,22 +12,25 @@
 
 #include "PvTracker.h"
 
-extern uint8 ccEn, ccStatus;
-//extern uint8 clrMbusBuff;
-extern uint16 mBusRegs[MBUS_MAX_REGS];
+freertos_twi_if twiPort;
+
+//extern uint8_t ccEn, ccStatus;
+extern uint16_t mBusRegs[MBUS_MAX_REGS];
 
 //Pv tracker variables
 float lat = 17.46608f, lon = 78.44009f;
 float timeZone = 5.5f, dist = 5.0f, width = 2.0f;
 //Panels will track +/-pvAngleRng degrees. 
 float pvAngleRng = 43;
-uint8 bkTrkFlg = 0;
-uint8 minCtr = 0;
+uint8_t bkTrkFlg = 0;
+uint8_t minCtr = 0;
 
 /* RTC 1 Min ISR */
-CY_ISR(RTCMinIsr)
+void RTCIntHandler(uint32_t ul_id, uint32_t ul_mask)
 {
-    ISR_RTC_ClearPending();
+    if (PIN_RTC_INT_PIO_ID != ul_id || PIN_RTC_INT_MASK != ul_mask)
+		return;
+	
     /* If Auto Mode */
     if(!mBusRegs[MBUS_REG_OPMODE])
     {
@@ -39,21 +42,26 @@ CY_ISR(RTCMinIsr)
 
 void vPvTrackerTask(void *pvParameters)
 {
-    uint8 status = 0;
+    uint8_t status = 0;
     
     #ifdef LOG_EN
         Debug_PutString("Hrs,Mins,Secs,Tracking Mode,PvAngle,BkAngle\r\n");
     #endif
-    //minCtr = 3;
-    //mBusRegs[MBUS_REG_OPMODE] = 1;
+	
+	/* These Init routines are shifted here because they should only be called after the scheduler has started */
+	/* Init Accelerometer */
+	ICMInitializeTo(twiPort, ICM_ADDR, 50);
+	/* Init RTC 1 min Alarm */
+	DSEnAL2To(twiPort, 1, 50);
+	    
     while(1)
     {
         /* Clear RTC interrupt flag */
-        DSReadByteTo(DS_REG_STAT,&status,50);
+        DSReadByteTo(twiPort, DS_REG_STAT,&status,50);
         if(status&0x02)
         {
             /* Clear Status Reg */
-            DSWriteByteTo(DS_REG_STAT, 0x00, 50);
+            DSWriteByteTo(twiPort, DS_REG_STAT, 0x00, 50);
         }
         
         /* In Tracking / Auto Mode */
@@ -72,83 +80,84 @@ void vPvTrackerTask(void *pvParameters)
             /* In Manual Mode */
             TestCode();
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        //vTaskDelay(pdMS_TO_TICKS(1000));
+		vTaskDelay(1000);
     }
 }
 
 void vPvTrackerInit(void)
 {
-    /* RTC 1 Min ISR */
-    ISR_RTC_StartEx(RTCMinIsr);
-    
     /* Initialize all peripherals */
-    EEPROM0_Start();
-    /* Initialize Variables from EEPROM */
+    /* Initialize TWI Port */
+    InitTwiRTOS();
+
+	/* Initialize FLASH Controller for EMULATED EEPROM Access*/
+	nvm_init(INT_FLASH);
+	/* Initialize Variables from EEPROM */
     InitVars();
     
     /* Init Motor Controller */
-    HB_RST_Write(0);
-    
-    /* Init Accelerometer */
-    I2C0_Start();
-    ICMInitializeTo(ICM_ADDR, 50);
-    
-    /* Init RTC 1 min Alarm */
-    DSEnAL2To(1,50);
+	gpio_set_pin_low(PIN_MOTOR_RST_IDX);
 }
 
 /* Initializes RAM variables from EERPOM */
 void InitVars(void)
 {
-    uint16 *ptr;
+    uint16_t *ptr;
     //Read vars from Memory
-    mBusRegs[MBUS_REG_LATL] = EEPROM0_ReadByte(EE_REG_LAT1);
-    mBusRegs[MBUS_REG_LATL] = (mBusRegs[MBUS_REG_LATL]<<8) | EEPROM0_ReadByte(EE_REG_LAT0);
-    mBusRegs[MBUS_REG_LATH] = EEPROM0_ReadByte(EE_REG_LAT3);
-    mBusRegs[MBUS_REG_LATH] = (mBusRegs[MBUS_REG_LATH]<<8) | EEPROM0_ReadByte(EE_REG_LAT2);
+//     mBusRegs[MBUS_REG_LATL] = EEPROM0_ReadByte(EE_REG_LAT1);
+//     mBusRegs[MBUS_REG_LATL] = (mBusRegs[MBUS_REG_LATL]<<8) | EEPROM0_ReadByte(EE_REG_LAT0);
+//     mBusRegs[MBUS_REG_LATH] = EEPROM0_ReadByte(EE_REG_LAT3);
+//     mBusRegs[MBUS_REG_LATH] = (mBusRegs[MBUS_REG_LATH]<<8) | EEPROM0_ReadByte(EE_REG_LAT2);
+	nvm_read(INT_FLASH, EE_REG_LAT0, (void *)&mBusRegs[MBUS_REG_LATL], 4);
     
-    mBusRegs[MBUS_REG_LONL] = EEPROM0_ReadByte(EE_REG_LON1);
-    mBusRegs[MBUS_REG_LONL] = (mBusRegs[MBUS_REG_LONL]<<8) | EEPROM0_ReadByte(EE_REG_LON0);
-    mBusRegs[MBUS_REG_LONH] = EEPROM0_ReadByte(EE_REG_LON3);
-    mBusRegs[MBUS_REG_LONH] = (mBusRegs[MBUS_REG_LONH]<<8) | EEPROM0_ReadByte(EE_REG_LON2);
-    
-    mBusRegs[MBUS_REG_TZL] = EEPROM0_ReadByte(EE_REG_TZ1);
-    mBusRegs[MBUS_REG_TZL] = (mBusRegs[MBUS_REG_TZL]<<8) | EEPROM0_ReadByte(EE_REG_TZ0);
-    mBusRegs[MBUS_REG_TZH] = EEPROM0_ReadByte(EE_REG_TZ3);
-    mBusRegs[MBUS_REG_TZH] = (mBusRegs[MBUS_REG_TZH]<<8) | EEPROM0_ReadByte(EE_REG_TZ2);
-    
-    mBusRegs[MBUS_REG_DISTL] = EEPROM0_ReadByte(EE_REG_DIST1);
-    mBusRegs[MBUS_REG_DISTL] = (mBusRegs[MBUS_REG_DISTL]<<8) | EEPROM0_ReadByte(EE_REG_DIST0);
-    mBusRegs[MBUS_REG_DISTH] = EEPROM0_ReadByte(EE_REG_DIST3);
-    mBusRegs[MBUS_REG_DISTH] = (mBusRegs[MBUS_REG_DISTH]<<8) | EEPROM0_ReadByte(EE_REG_DIST2);
-    
-    mBusRegs[MBUS_REG_WIDTHL] = EEPROM0_ReadByte(EE_REG_WIDTH1);
-    mBusRegs[MBUS_REG_WIDTHL] = (mBusRegs[MBUS_REG_WIDTHL]<<8) | EEPROM0_ReadByte(EE_REG_WIDTH0);
-    mBusRegs[MBUS_REG_WIDTHH] = EEPROM0_ReadByte(EE_REG_WIDTH3);
-    mBusRegs[MBUS_REG_WIDTHH] = (mBusRegs[MBUS_REG_WIDTHH]<<8) | EEPROM0_ReadByte(EE_REG_WIDTH2);
-    
-    mBusRegs[MBUS_REG_PNLRNGL] = EEPROM0_ReadByte(EE_REG_PNLRNG1);
-    mBusRegs[MBUS_REG_PNLRNGL] = (mBusRegs[MBUS_REG_PNLRNGL]<<8) | EEPROM0_ReadByte(EE_REG_PNLRNG0);
-    mBusRegs[MBUS_REG_PNLRNGH] = EEPROM0_ReadByte(EE_REG_PNLRNG3);
-    mBusRegs[MBUS_REG_PNLRNGH] = (mBusRegs[MBUS_REG_PNLRNGH]<<8) | EEPROM0_ReadByte(EE_REG_PNLRNG2);
+//     mBusRegs[MBUS_REG_LONL] = EEPROM0_ReadByte(EE_REG_LON1);
+//     mBusRegs[MBUS_REG_LONL] = (mBusRegs[MBUS_REG_LONL]<<8) | EEPROM0_ReadByte(EE_REG_LON0);
+//     mBusRegs[MBUS_REG_LONH] = EEPROM0_ReadByte(EE_REG_LON3);
+//     mBusRegs[MBUS_REG_LONH] = (mBusRegs[MBUS_REG_LONH]<<8) | EEPROM0_ReadByte(EE_REG_LON2);
+    nvm_read(INT_FLASH, EE_REG_LON0, (void *)&mBusRegs[MBUS_REG_LONL], 4);
+
+//     mBusRegs[MBUS_REG_TZL] = EEPROM0_ReadByte(EE_REG_TZ1);
+//     mBusRegs[MBUS_REG_TZL] = (mBusRegs[MBUS_REG_TZL]<<8) | EEPROM0_ReadByte(EE_REG_TZ0);
+//     mBusRegs[MBUS_REG_TZH] = EEPROM0_ReadByte(EE_REG_TZ3);
+//     mBusRegs[MBUS_REG_TZH] = (mBusRegs[MBUS_REG_TZH]<<8) | EEPROM0_ReadByte(EE_REG_TZ2);
+    nvm_read(INT_FLASH, EE_REG_TZ0, (void *)&mBusRegs[MBUS_REG_TZL], 4);
+
+//     mBusRegs[MBUS_REG_DISTL] = EEPROM0_ReadByte(EE_REG_DIST1);
+//     mBusRegs[MBUS_REG_DISTL] = (mBusRegs[MBUS_REG_DISTL]<<8) | EEPROM0_ReadByte(EE_REG_DIST0);
+//     mBusRegs[MBUS_REG_DISTH] = EEPROM0_ReadByte(EE_REG_DIST3);
+//     mBusRegs[MBUS_REG_DISTH] = (mBusRegs[MBUS_REG_DISTH]<<8) | EEPROM0_ReadByte(EE_REG_DIST2);
+    nvm_read(INT_FLASH, EE_REG_DIST0, (void *)&mBusRegs[MBUS_REG_DISTL], 4);
+
+//     mBusRegs[MBUS_REG_WIDTHL] = EEPROM0_ReadByte(EE_REG_WIDTH1);
+//     mBusRegs[MBUS_REG_WIDTHL] = (mBusRegs[MBUS_REG_WIDTHL]<<8) | EEPROM0_ReadByte(EE_REG_WIDTH0);
+//     mBusRegs[MBUS_REG_WIDTHH] = EEPROM0_ReadByte(EE_REG_WIDTH3);
+//     mBusRegs[MBUS_REG_WIDTHH] = (mBusRegs[MBUS_REG_WIDTHH]<<8) | EEPROM0_ReadByte(EE_REG_WIDTH2);
+    nvm_read(INT_FLASH, EE_REG_WIDTH0, (void *)&mBusRegs[MBUS_REG_WIDTHL], 4);
+
+//     mBusRegs[MBUS_REG_PNLRNGL] = EEPROM0_ReadByte(EE_REG_PNLRNG1);
+//     mBusRegs[MBUS_REG_PNLRNGL] = (mBusRegs[MBUS_REG_PNLRNGL]<<8) | EEPROM0_ReadByte(EE_REG_PNLRNG0);
+//     mBusRegs[MBUS_REG_PNLRNGH] = EEPROM0_ReadByte(EE_REG_PNLRNG3);
+//     mBusRegs[MBUS_REG_PNLRNGH] = (mBusRegs[MBUS_REG_PNLRNGH]<<8) | EEPROM0_ReadByte(EE_REG_PNLRNG2);
+	nvm_read(INT_FLASH, EE_REG_PNLRNG0, (void *)&mBusRegs[MBUS_REG_PNLRNGL], 4);
     
     //Init local vars
-    ptr = (uint16*)&lat;
+    ptr = (uint16_t*)&lat;
     ptr[1] = mBusRegs[MBUS_REG_LATH];
     ptr[0] = mBusRegs[MBUS_REG_LATL];
-    ptr = (uint16*)&lon;
+    ptr = (uint16_t*)&lon;
     ptr[1] = mBusRegs[MBUS_REG_LONH];
     ptr[0] = mBusRegs[MBUS_REG_LONL];
-    ptr = (uint16*)&timeZone;
+    ptr = (uint16_t*)&timeZone;
     ptr[1] = mBusRegs[MBUS_REG_TZH];
     ptr[0] = mBusRegs[MBUS_REG_TZL];
-    ptr = (uint16*)&width;
+    ptr = (uint16_t*)&width;
     ptr[1] = mBusRegs[MBUS_REG_WIDTHH];
     ptr[0] = mBusRegs[MBUS_REG_WIDTHL];
-    ptr = (uint16*)&dist;
+    ptr = (uint16_t*)&dist;
     ptr[1] = mBusRegs[MBUS_REG_DISTH];
     ptr[0] = mBusRegs[MBUS_REG_DISTL];
-    ptr = (uint16*)&pvAngleRng;
+    ptr = (uint16_t*)&pvAngleRng;
     ptr[1] = mBusRegs[MBUS_REG_PNLRNGH];
     ptr[0] = mBusRegs[MBUS_REG_PNLRNGL];
     
@@ -163,40 +172,47 @@ void InitVars(void)
     
 }
 
+void InitTwiRTOS(void)
+{
+	const freertos_peripheral_options_t settings = {
+		NULL,
+		0,
+		configLIBRARY_LOWEST_INTERRUPT_PRIORITY,
+		TWI_I2C_MASTER,
+		USE_TX_ACCESS_SEM | USE_RX_ACCESS_MUTEX | WAIT_TX_COMPLETE | WAIT_RX_COMPLETE
+	};
+
+	/* Enable the peripheral clock in the PMC. */
+	sysclk_enable_peripheral_clock(BOARD_TWI_ID);
+
+	twiPort = freertos_twi_master_init(BOARD_TWI, &settings);
+}
+
 void PVTrack(void)
 {
     float pvAngle, bkTrkAngle;
-    uint16 *ptr;
+    uint16_t *ptr;
     
     /* Disable Charge Ctrlr */
-    ccEn = 0;
+    //ccEn = 0;
     /* Wait until charge ctrlr is disabled */
-    while(ccStatus)
-    {
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
+//     while(ccStatus)
+//     {
+//         vTaskDelay(pdMS_TO_TICKS(10));
+//     }
     
     taskENTER_CRITICAL();
     
     /* Read RTC */
-    DSGetTimeTo((uint16 *)&mBusRegs[MBUS_REG_SEC], 50);
-    DSGetFullDateTo((uint16 *)&mBusRegs[MBUS_REG_DAY], 50);
-    
-    /*mBusRegs[MBUS_REG_SEC] = 0x00;
-    mBusRegs[MBUS_REG_MIN] = 0x30;
-    mBusRegs[MBUS_REG_HRS] = 0x12;
-    mBusRegs[MBUS_REG_DAY] = 0x1;
-    mBusRegs[MBUS_REG_DD] = 0x19;
-    mBusRegs[MBUS_REG_MM] = 0x08;
-    mBusRegs[MBUS_REG_YY] = 0x17;*/
+    DSGetTimeTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_SEC], 50);
+    DSGetFullDateTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_DAY], 50);
     
     /* Clacluate PV Angle from time */
     pvAngle = GetPvAngle();
-    ptr = (uint16*)&pvAngle;
+    ptr = (uint16_t*)&pvAngle;
     mBusRegs[MBUS_REG_PVANGLEH] = ptr[1];
     mBusRegs[MBUS_REG_PVANGLEL] = ptr[0];
-    
-    
+        
     #ifdef DEBUG_EN
         Debug_PutString("Targ Ang = ");
         PrintFlt(pvAngle);
@@ -272,18 +288,18 @@ void PVTrack(void)
     taskEXIT_CRITICAL();
     
     /* Enable Charge Ctrlr */
-    ccEn = 1;
+    //ccEn = 1;
 } 
 
 void GotoAngle(float pvAngle)
 {
-    uint16 *ptr;
-    int16 accVals[3] = {};
+    uint16_t *ptr;
+    int16_t accVals[3] = {};
     float oriVals[3], error = 0;
-    uint8 p = 0;
+    uint8_t p = 0;
     float oriX, prevOri = 0;
     
-    ICMReadAccDataAllTo(ICM_ADDR,(uint16*)accVals, 50);
+    ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
     GetOrientation(accVals, oriVals);
     
     #ifdef DEBUG_EN
@@ -306,7 +322,8 @@ void GotoAngle(float pvAngle)
         #ifdef DEBUG_EN
             Debug_PutString("ACLK\r\n");
         #endif
-        PwmSelReg_Write(1);
+        gpio_set_pin_low(PIN_MOTOR_A_IDX);
+		gpio_set_pin_high(PIN_MOTOR_B_IDX);
     }
     else
     {
@@ -314,19 +331,16 @@ void GotoAngle(float pvAngle)
         #ifdef DEBUG_EN
             Debug_PutString("CLK\r\n");
         #endif
-        PwmSelReg_Write(0);
+        gpio_set_pin_high(PIN_MOTOR_A_IDX);
+        gpio_set_pin_low(PIN_MOTOR_B_IDX);
     }
     
     //If error greater than +/- 1.0f
     if(!((error >=-1.0f)&&(error<1.0f)))
     {
-        //Set Motor Speed
-        //PWM0_WriteCompare(SPIRegs[SPI_REG_MOTSP]);
-        
         //Turn Motor On
-        HB_RST_Write(1);
-        PWM0_Start();
-        PWM0_WriteCompare(1023);
+        gpio_set_pin_high(PIN_MOTOR_RST_IDX);
+
         #ifdef DEBUG_EN
             Debug_PutString("ON\r\n");    
         #endif
@@ -337,11 +351,11 @@ void GotoAngle(float pvAngle)
         prevOri = 0;
         for(p = 0; p < 8; p++)
         {
-            ICMReadAccDataAllTo(ICM_ADDR,(uint16*)accVals, 50);
+            ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
             GetOrientation(accVals, oriVals);
             oriX = prevOri + ((oriVals[0] - prevOri)/((float)(p+1)));
         	prevOri = oriX;
-            CyDelay(40);
+            delay_ms(40);
         }
         oriVals[0] = oriX;
         
@@ -359,7 +373,8 @@ void GotoAngle(float pvAngle)
             #ifdef DEBUG_EN
                 Debug_PutString("ACLK\r\n");
             #endif
-            PwmSelReg_Write(1);
+			gpio_set_pin_low(PIN_MOTOR_A_IDX);
+			gpio_set_pin_high(PIN_MOTOR_B_IDX);
         }
         else
         {
@@ -367,11 +382,12 @@ void GotoAngle(float pvAngle)
             #ifdef DEBUG_EN
                 Debug_PutString("CLK\r\n");
             #endif
-            PwmSelReg_Write(0);
+			gpio_set_pin_high(PIN_MOTOR_A_IDX);
+			gpio_set_pin_low(PIN_MOTOR_B_IDX);
         }
     }
     //Turn Motor Off
-    HB_RST_Write(0);
+    gpio_set_pin_low(PIN_MOTOR_RST_IDX);
     
     #ifdef DEBUG_EN
         Debug_PutString("X = ");
@@ -379,25 +395,24 @@ void GotoAngle(float pvAngle)
         Debug_PutString("\r\n");
     #endif
     
-    PWM0_Stop();
+    //PWM0_Stop();
     #ifdef DEBUG_EN
         Debug_PutString("OFF\r\n");
     #endif
     
-    ptr = (uint16*)&oriVals[0];
+    ptr = (uint16_t*)&oriVals[0];
     mBusRegs[MBUS_REG_ANXH] = ptr[1];
     mBusRegs[MBUS_REG_ANXL] = ptr[0];
 }
 
-
 void TestCode(void)
 {
-    int16 accVals[3] = {0, 0, 0};
+    int16_t accVals[3] = {0, 0, 0};
     float oriVals[3], pvAngle=0;
-    uint16 *ptr;
+    uint16_t *ptr;
     
-    DSGetTimeTo((uint16 *)&mBusRegs[MBUS_REG_SEC], 50);
-    DSGetFullDateTo((uint16 *)&mBusRegs[MBUS_REG_DAY], 50);
+    DSGetTimeTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_SEC], 50);
+    DSGetFullDateTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_DAY], 50);
     #ifdef DEBUG_EN
         Debug_PutString("Time: ");
         PrintInt(((mBusRegs[MBUS_REG_HRS]>>4)*10) + (mBusRegs[MBUS_REG_HRS]&0x000F));
@@ -407,38 +422,45 @@ void TestCode(void)
         PrintInt(((mBusRegs[MBUS_REG_SEC]>>4)*10) + (mBusRegs[MBUS_REG_SEC]&0x000F));
         Debug_PutString("\r\n");
     #endif
-    ICMReadAccDataAllTo(ICM_ADDR,(uint16*)accVals, 50);
+    ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
     GetOrientation(accVals, oriVals);
     #ifdef DEBUG_EN
         Debug_PutString("X = ");
         PrintFlt(oriVals[0]);
         Debug_PutString("\r\n");
     #endif
-    ptr = (uint16*)&oriVals[0];
+    ptr = (uint16_t*)&oriVals[0];
     mBusRegs[MBUS_REG_ANXH] = ptr[1];
     mBusRegs[MBUS_REG_ANXL] = ptr[0];
     pvAngle = GetPvAngle();
-    ptr = (uint16*)&pvAngle;
+    ptr = (uint16_t*)&pvAngle;
     mBusRegs[MBUS_REG_PVANGLEH] = ptr[1];
     mBusRegs[MBUS_REG_PVANGLEL] = ptr[0];
     
-    PwmSelReg_Write(mBusRegs[MBUS_REG_MOTDR]);
+	if(mBusRegs[MBUS_REG_MOTDR])
+	{
+		gpio_set_pin_low(PIN_MOTOR_A_IDX);
+		gpio_set_pin_high(PIN_MOTOR_B_IDX);
+	}
+	else
+	{
+		gpio_set_pin_high(PIN_MOTOR_A_IDX);
+		gpio_set_pin_low(PIN_MOTOR_B_IDX);
+	}
+
     if(mBusRegs[MBUS_REG_MOTON])
     {
         //Disable Charge Ctrlr
-        ccEn = 0;
+		//ccEn = 0;
         //Turn Motor On
-        HB_RST_Write(1);
-        PWM0_Start();
-        PWM0_WriteCompare(1023);
+		gpio_set_pin_high(PIN_MOTOR_RST_IDX);
     }
     else
     {
         //Enable Charge Ctrlr
-        ccEn = 1;
+        //ccEn = 1;
         //Turn Motor Off
-        HB_RST_Write(0);
-        PWM0_Stop();
+        gpio_set_pin_low(PIN_MOTOR_RST_IDX);
     }
 }
 
@@ -473,7 +495,7 @@ void TestCode(void)
     }
 #endif
 
-void GetOrientation(int16 *acc, float *orientation)
+void GetOrientation(int16_t *acc, float *orientation)
 {
     float accFlt[3];
     accFlt[0] = ((float)acc[0])/32768.0f;
@@ -494,9 +516,9 @@ void GetOrientation(int16 *acc, float *orientation)
 
 float GetPvAngle(void)
 {
-	int32 x1, x2, x3, x4, x5, x7;
-	int32 y0, y1, y4, y12;
-    int16 date, mon, year, hrs, min, sec;
+	int32_t x1, x2, x3, x4, x5, x7;
+	int32_t y0, y1, y4, y12;
+    int16_t date, mon, year, hrs, min, sec;
     float y2, y3, y5, y6, y7, y8, y9, y10, y11, y13;
 	float y14, y15, y16;
 	float x9, x13;

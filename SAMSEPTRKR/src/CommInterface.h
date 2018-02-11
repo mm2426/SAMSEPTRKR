@@ -68,43 +68,21 @@
     #define MBUS_REG_WIDTHL         34
     #define MBUS_REG_WIDTHH         35
     
-    /* Maximum Modbus Registers */
-    #define MBUS_MAX_REGS           36
-    /* Modbus CRC Gen Poly */
-    #define MBUS_CRC_POLY           0xA001
-    
-    /* Max UART Buffer Size*/
-    #define UART_BUFF_SIZE_MAX      150
-    
-    /* To check whether bit is set / clr */
-    #define bitIsSet(val, bitNo)    (val&(1<<bitNo))
-    
-    #include "project.h"
-    #include "FreeRTOS.h"
+    #include <asf.h>
+	#include <string.h>
+	#include "FreeRTOS.h"
     #include "task.h"
     #include "semphr.h"
-    #include "DS3231.h"
-    
-    typedef enum rxstates
-    {
-        idle, dRx
-    }rxstates;
+    #include "DS3231RTOS.h"
+	#include "rs485pdc.h"
+    #include "mbusStack.h"
 
-    /* ISRs */
-    CY_ISR_PROTO(Uart0RxIsr);
-    CY_ISR_PROTO(Timer0Isr);
-    
     /* RTOS Task Declarations */
     void vCommTask(void *pvParameters);
     
     /* General Function Declarations */
     /* Initialize Communication Variables */
     void vCommInit(void);
-    /* MODBUS Functions */
-    void parseMbusPkt(uint8 *buff, uint8 len, uint8 *respBuff, uint8 *respLen);
-    void writeMbusRegs(uint16 *mbusBuff, uint8 regAddr, uint8 len);
-    uint16 calcCRC(uint8 *buff, uint8 len);
-    void sendRespPkt(uint8 *pkt, uint8 len);
     
 #endif
 

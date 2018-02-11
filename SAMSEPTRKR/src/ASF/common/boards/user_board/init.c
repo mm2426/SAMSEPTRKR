@@ -18,4 +18,39 @@ void board_init(void)
 	 * for, e.g., the I/O pins. The initialization can rely on application-
 	 * specific board configuration, found in conf_board.h.
 	 */
+
+	/* Disable the watchdog */
+	WDT->WDT_MR = WDT_MR_WDDIS;
+
+	/* Init IO Port service to enable configuring pins */
+	ioport_init();
+
+	//Configure USART0 Pins (RS485, MODBUS)
+	gpio_configure_group(PINS_USART0_PIO, PINS_USART0, PINS_USART0_FLAGS);
+	
+	//Configure TWI0 Pins
+	gpio_configure_group(PINS_TWI0_PIO, PINS_TWI0, PINS_TWI0_FLAGS);
+
+	//Configure Motor Controller Pins
+	gpio_configure_pin(PIN_MOTOR_RST_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+	gpio_configure_pin(PIN_MOTOR_A_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+	gpio_configure_pin(PIN_MOTOR_B_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+
+	/* Configure LED Pins */
+	gpio_configure_pin(PIN_DEBUGLED_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+
+	//Configure RTC 1 min Interrupt Pin
+	gpio_configure_pin(PIN_RTC_INT_IDX, PIO_INPUT);
+
+	/* Initialize PIOs interrupt handlers (see PIO definition in board.h). */
+	pio_handler_set(PIN_RTC_INT_PIO, PIN_RTC_INT_PIO_ID, PIN_RTC_INT_MASK, (PIO_OPENDRAIN | PIO_IT_FALL_EDGE), RTCIntHandler);
+
+	/* Enable PIO controller IRQs. */
+	NVIC_EnableIRQ((IRQn_Type) PIN_RTC_INT_PIO_ID);
+
+	/* Set RTC Int Priority */
+	pio_handler_set_priority(PIN_RTC_INT_PIO, (IRQn_Type) PIN_RTC_INT_PIO_ID, configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
+	
+	/* Enable PIO line interrupts. */
+	pio_enable_interrupt(PIN_RTC_INT_PIO, PIN_RTC_INT_MASK);
 }

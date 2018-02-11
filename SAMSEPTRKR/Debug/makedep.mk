@@ -2,21 +2,31 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\ASF\common\drivers\nvm\sam\sam_nvm.c
+
 src\ASF\common\services\freertos\sam\freertos_peripheral_control.c
+
+src\ASF\sam\drivers\efc\efc.c
+
+src\ASF\sam\services\flash_efc\flash_efc.c
+
+src\DS3231RTOS.c
+
+src\ICM20648RTOS.c
+
+src\mbusStack.c
+
+src\PvTracker.c
+
+src\rs485pdc.c
 
 src\ASF\common\services\freertos\sam\freertos_twi_master.c
 
-src\ASF\common\services\freertos\sam\freertos_uart_serial.c
+src\ASF\common\services\freertos\sam\freertos_usart_serial.c
 
 src\ASF\common\services\serial\usart_serial.c
 
-src\ASF\sam\drivers\adc\adc.c
-
-src\ASF\sam\drivers\adc\adc_sam3u.c
-
 src\ASF\sam\drivers\pdc\pdc.c
-
-src\ASF\sam\drivers\pwm\pwm.c
 
 src\ASF\sam\drivers\twi\twi.c
 
@@ -59,6 +69,8 @@ src\ASF\thirdparty\freertos\freertos-7.3.0\source\queue.c
 src\ASF\thirdparty\freertos\freertos-7.3.0\source\tasks.c
 
 src\ASF\thirdparty\freertos\freertos-7.3.0\source\timers.c
+
+src\CommInterface.c
 
 src\main.c
 

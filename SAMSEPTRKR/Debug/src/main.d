@@ -161,7 +161,8 @@ src/main.d src/main.o: ../src/main.c ../src/asf.h \
  ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
  ../src/config/conf_uart_serial.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h ../src/PvTracker.h \
- ../src/DS3231RTOS.h ../src/ICM20648RTOS.h ../src/CommInterface.h \
+ ../src/DS3231.h ../src/ICM20648.h ../src/AT24C08.h \
+ ../src/CommInterface.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
  ../src/rs485pdc.h ../src/mbusStack.h \
@@ -501,9 +502,11 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/PvTracker.h:
 
-../src/DS3231RTOS.h:
+../src/DS3231.h:
 
-../src/ICM20648RTOS.h:
+../src/ICM20648.h:
+
+../src/AT24C08.h:
 
 ../src/CommInterface.h:
 

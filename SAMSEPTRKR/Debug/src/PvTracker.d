@@ -13,14 +13,8 @@ src/PvTracker.d src/PvTracker.o: ../src/PvTracker.c ../src/PvTracker.h \
  ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/portable.h \
  ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/portable/gcc/sam/portmacro.h \
  ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/mpu_wrappers.h \
- ../src/DS3231RTOS.h \
- ../src/ASF/common/services/freertos/sam/freertos_twi_master.h \
- ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/task.h \
- ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/list.h \
- ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/semphr.h \
- ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/queue.h \
- ../src/ASF/common/services/twi/twi_master.h \
- ../src/ASF/sam/utils/compiler.h ../src/ASF/common/utils/parts.h \
+ ../src/DS3231.h ../src/asf.h ../src/ASF/sam/utils/compiler.h \
+ ../src/ASF/common/utils/parts.h \
  ../src/ASF/sam/utils/preprocessor/preprocessor.h \
  ../src/ASF/sam/utils/preprocessor/tpaste.h \
  ../src/ASF/sam/utils/preprocessor/stringz.h \
@@ -114,26 +108,31 @@ src/PvTracker.d src/PvTracker.o: ../src/PvTracker.c ../src/PvTracker.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\alloca.h \
  ../src/ASF/common/utils/interrupt.h \
  ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.h \
- ../src/ASF/common/services/twi/sam_twi/twi_master.h \
- ../src/ASF/sam/drivers/twi/twi.h \
+ ../src/ASF/sam/utils/status_codes.h \
+ ../src/ASF/common/boards/user_board/user_board.h \
+ ../src/config/conf_board.h ../src/ASF/common/services/delay/delay.h \
  ../src/ASF/common/services/clock/sysclk.h ../src/config/conf_clock.h \
  ../src/ASF/common/services/clock/sam4s/sysclk.h \
  ../src/ASF/common/services/clock/osc.h \
  ../src/ASF/common/services/clock/sam4s/osc.h \
- ../src/ASF/common/boards/board.h \
- ../src/ASF/common/boards/user_board/user_board.h \
- ../src/config/conf_board.h ../src/ASF/sam/drivers/pmc/pmc.h \
+ ../src/ASF/common/boards/board.h ../src/ASF/sam/drivers/pmc/pmc.h \
  ../src/ASF/common/services/clock/pll.h \
  ../src/ASF/common/services/clock/sam4s/pll.h \
- ../src/ASF/common/services/freertos/sam/freertos_peripheral_control.h \
- ../src/ASF/sam/utils/status_codes.h ../src/ASF/sam/drivers/pdc/pdc.h \
- ../src/ICM20648RTOS.h ../src/CommInterface.h ../src/asf.h \
- ../src/ASF/common/services/delay/delay.h \
  ../src/ASF/common/services/delay/sam/cycle_counter.h \
  ../src/ASF/sam/drivers/efc/efc.h \
  ../src/ASF/sam/services/flash_efc/flash_efc.h \
  ../src/ASF/common/services/freertos/sam/freertos_peripheral_control.h \
+ ../src/ASF/sam/drivers/pdc/pdc.h \
+ ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/semphr.h \
+ ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/queue.h \
  ../src/ASF/common/services/freertos/sam/freertos_peripheral_control_private.h \
+ ../src/ASF/common/services/freertos/sam/freertos_twi_master.h \
+ ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/task.h \
+ ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/list.h \
+ ../src/ASF/common/services/twi/twi_master.h \
+ ../src/ASF/common/services/twi/sam_twi/twi_master.h \
+ ../src/ASF/sam/drivers/twi/twi.h \
+ ../src/ASF/common/services/freertos/sam/freertos_peripheral_control.h \
  ../src/ASF/common/services/freertos/sam/freertos_usart_serial.h \
  ../src/ASF/sam/drivers/usart/usart.h \
  ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/FreeRTOS_CLI.h \
@@ -161,7 +160,8 @@ src/PvTracker.d src/PvTracker.o: ../src/PvTracker.c ../src/PvTracker.h \
  ../src/ASF/common/services/serial/serial.h \
  ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
  ../src/config/conf_uart_serial.h \
- ../src/ASF/sam/drivers/pio/pio_handler.h \
+ ../src/ASF/sam/drivers/pio/pio_handler.h ../src/ICM20648.h \
+ ../src/AT24C08.h ../src/CommInterface.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
  ../src/rs485pdc.h ../src/mbusStack.h \
@@ -197,19 +197,9 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/mpu_wrappers.h:
 
-../src/DS3231RTOS.h:
+../src/DS3231.h:
 
-../src/ASF/common/services/freertos/sam/freertos_twi_master.h:
-
-../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/task.h:
-
-../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/list.h:
-
-../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/semphr.h:
-
-../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/queue.h:
-
-../src/ASF/common/services/twi/twi_master.h:
+../src/asf.h:
 
 ../src/ASF/sam/utils/compiler.h:
 
@@ -401,9 +391,13 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/common/utils/interrupt/interrupt_sam_nvic.h:
 
-../src/ASF/common/services/twi/sam_twi/twi_master.h:
+../src/ASF/sam/utils/status_codes.h:
 
-../src/ASF/sam/drivers/twi/twi.h:
+../src/ASF/common/boards/user_board/user_board.h:
+
+../src/config/conf_board.h:
+
+../src/ASF/common/services/delay/delay.h:
 
 ../src/ASF/common/services/clock/sysclk.h:
 
@@ -417,29 +411,11 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/common/boards/board.h:
 
-../src/ASF/common/boards/user_board/user_board.h:
-
-../src/config/conf_board.h:
-
 ../src/ASF/sam/drivers/pmc/pmc.h:
 
 ../src/ASF/common/services/clock/pll.h:
 
 ../src/ASF/common/services/clock/sam4s/pll.h:
-
-../src/ASF/common/services/freertos/sam/freertos_peripheral_control.h:
-
-../src/ASF/sam/utils/status_codes.h:
-
-../src/ASF/sam/drivers/pdc/pdc.h:
-
-../src/ICM20648RTOS.h:
-
-../src/CommInterface.h:
-
-../src/asf.h:
-
-../src/ASF/common/services/delay/delay.h:
 
 ../src/ASF/common/services/delay/sam/cycle_counter.h:
 
@@ -449,7 +425,27 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/common/services/freertos/sam/freertos_peripheral_control.h:
 
+../src/ASF/sam/drivers/pdc/pdc.h:
+
+../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/semphr.h:
+
+../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/queue.h:
+
 ../src/ASF/common/services/freertos/sam/freertos_peripheral_control_private.h:
+
+../src/ASF/common/services/freertos/sam/freertos_twi_master.h:
+
+../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/task.h:
+
+../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include/list.h:
+
+../src/ASF/common/services/twi/twi_master.h:
+
+../src/ASF/common/services/twi/sam_twi/twi_master.h:
+
+../src/ASF/sam/drivers/twi/twi.h:
+
+../src/ASF/common/services/freertos/sam/freertos_peripheral_control.h:
 
 ../src/ASF/common/services/freertos/sam/freertos_usart_serial.h:
 
@@ -506,6 +502,12 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/config/conf_uart_serial.h:
 
 ../src/ASF/sam/drivers/pio/pio_handler.h:
+
+../src/ICM20648.h:
+
+../src/AT24C08.h:
+
+../src/CommInterface.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h:
 

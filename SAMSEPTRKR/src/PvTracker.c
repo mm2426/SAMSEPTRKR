@@ -25,6 +25,8 @@ float pvAngleRng = 43;
 uint8_t bkTrkFlg = 0;
 uint8_t minCtr = 0;
 
+static void InitTWI(void);
+
 /* RTC 1 Min ISR */
 void RTCIntHandler(uint32_t ul_id, uint32_t ul_mask)
 {
@@ -43,6 +45,7 @@ void RTCIntHandler(uint32_t ul_id, uint32_t ul_mask)
 void vPvTrackerTask(void *pvParameters)
 {
     uint8_t status = 0;
+	uint16_t recvData;
     
     #ifdef LOG_EN
         Debug_PutString("Hrs,Mins,Secs,Tracking Mode,PvAngle,BkAngle\r\n");
@@ -50,18 +53,35 @@ void vPvTrackerTask(void *pvParameters)
 	
 	/* These Init routines are shifted here because they should only be called after the scheduler has started */
 	/* Init Accelerometer */
-	ICMInitializeTo(twiPort, ICM_ADDR, 50);
+	#ifndef ICM20648_USE_RTOS_API
+		ICMInitialize(BOARD_TWI, ICM_ADDR);
+	#else
+		ICMInitializeTo(twiPort, ICM_ADDR, 50);
+	#endif
+
 	/* Init RTC 1 min Alarm */
-	DSEnAL2To(twiPort, 1, 50);
-	    
-    while(1)
+	#ifndef DS3231_USE_RTOS_API
+		DSEnAL2(BOARD_TWI, 1);
+	#else
+		DSEnAL2To(twiPort, 1, 50);
+	#endif
+
+	while(1)
     {
         /* Clear RTC interrupt flag */
-        DSReadByteTo(twiPort, DS_REG_STAT,&status,50);
+		#ifndef DS3231_USE_RTOS_API
+			DSReadByte(BOARD_TWI, DS_REG_STAT,&status);
+		#else
+			DSReadByteTo(twiPort, DS_REG_STAT,&status,50);
+		#endif
         if(status&0x02)
         {
             /* Clear Status Reg */
-            DSWriteByteTo(twiPort, DS_REG_STAT, 0x00, 50);
+			#ifndef DS3231_USE_RTOS_API
+				DSWriteByte(BOARD_TWI, DS_REG_STAT, 0x00);
+			#else
+				DSWriteByteTo(twiPort, DS_REG_STAT, 0x00, 50);
+			#endif
         }
         
         /* In Tracking / Auto Mode */
@@ -89,15 +109,16 @@ void vPvTrackerInit(void)
 {
     /* Initialize all peripherals */
     /* Initialize TWI Port */
-    InitTwiRTOS();
+    //InitTwiRTOS();
+	InitTWI();
 
 	/* Initialize FLASH Controller for EMULATED EEPROM Access*/
-	nvm_init(INT_FLASH);
+	//nvm_init(INT_FLASH);
 	/* Initialize Variables from EEPROM */
-    InitVars();
+    //InitVars();
     
     /* Init Motor Controller */
-	gpio_set_pin_low(PIN_MOTOR_RST_IDX);
+	
 }
 
 /* Initializes RAM variables from EERPOM */
@@ -172,6 +193,24 @@ void InitVars(void)
     
 }
 
+static void InitTWI(void)
+{
+	twi_options_t twiSettings = {
+		sysclk_get_peripheral_hz(),
+		100000,
+		0,
+		0
+	};
+	/* Enable the peripheral clock in the PMC. */
+	sysclk_enable_peripheral_clock(BOARD_TWI_ID);
+
+	/* Enable TWI master mode */
+	twi_enable_master_mode(BOARD_TWI);
+
+	/* Initialize TWI peripheral */
+	twi_master_init(BOARD_TWI, &twiSettings);
+}
+
 void InitTwiRTOS(void)
 {
 	const freertos_peripheral_options_t settings = {
@@ -184,7 +223,7 @@ void InitTwiRTOS(void)
 
 	/* Enable the peripheral clock in the PMC. */
 	sysclk_enable_peripheral_clock(BOARD_TWI_ID);
-
+	//InitTWI();
 	twiPort = freertos_twi_master_init(BOARD_TWI, &settings);
 }
 
@@ -204,8 +243,13 @@ void PVTrack(void)
     taskENTER_CRITICAL();
     
     /* Read RTC */
-    DSGetTimeTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_SEC], 50);
-    DSGetFullDateTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_DAY], 50);
+	#ifndef DS3231_USE_RTOS_API
+		DSGetTime(BOARD_TWI, (uint16_t *)&mBusRegs[MBUS_REG_SEC]);
+		DSGetFullDate(BOARD_TWI, (uint16_t *)&mBusRegs[MBUS_REG_DAY]);
+	#else
+		DSGetTimeTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_SEC], 50);
+		DSGetFullDateTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_DAY], 50);
+	#endif
     
     /* Clacluate PV Angle from time */
     pvAngle = GetPvAngle();
@@ -299,7 +343,12 @@ void GotoAngle(float pvAngle)
     uint8_t p = 0;
     float oriX, prevOri = 0;
     
-    ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+	#ifndef ICM20648_USE_RTOS_API
+		ICMReadAccDataAll(BOARD_TWI, ICM_ADDR,(uint16_t*)accVals);
+	#else
+		ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+	#endif
+
     GetOrientation(accVals, oriVals);
     
     #ifdef DEBUG_EN
@@ -339,7 +388,7 @@ void GotoAngle(float pvAngle)
     if(!((error >=-1.0f)&&(error<1.0f)))
     {
         //Turn Motor On
-        gpio_set_pin_high(PIN_MOTOR_RST_IDX);
+        //gpio_set_pin_high(PIN_MOTOR_RST_IDX);
 
         #ifdef DEBUG_EN
             Debug_PutString("ON\r\n");    
@@ -351,7 +400,11 @@ void GotoAngle(float pvAngle)
         prevOri = 0;
         for(p = 0; p < 8; p++)
         {
-            ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+            #ifndef ICM20648_USE_RTOS_API
+				ICMReadAccDataAll(BOARD_TWI, ICM_ADDR,(uint16_t*)accVals);
+			#else
+				ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+			#endif
             GetOrientation(accVals, oriVals);
             oriX = prevOri + ((oriVals[0] - prevOri)/((float)(p+1)));
         	prevOri = oriX;
@@ -387,7 +440,7 @@ void GotoAngle(float pvAngle)
         }
     }
     //Turn Motor Off
-    gpio_set_pin_low(PIN_MOTOR_RST_IDX);
+    //gpio_set_pin_low(PIN_MOTOR_RST_IDX);
     
     #ifdef DEBUG_EN
         Debug_PutString("X = ");
@@ -410,9 +463,13 @@ void TestCode(void)
     int16_t accVals[3] = {0, 0, 0};
     float oriVals[3], pvAngle=0;
     uint16_t *ptr;
-    
-    DSGetTimeTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_SEC], 50);
-    DSGetFullDateTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_DAY], 50);
+    #ifndef DS3231_USE_RTOS_API
+		DSGetTime(BOARD_TWI, (uint16_t *)&mBusRegs[MBUS_REG_SEC]);
+		DSGetFullDate(BOARD_TWI, (uint16_t *)&mBusRegs[MBUS_REG_DAY]);
+	#else
+		DSGetTimeTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_SEC], 50);
+		DSGetFullDateTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_DAY], 50);
+	#endif
     #ifdef DEBUG_EN
         Debug_PutString("Time: ");
         PrintInt(((mBusRegs[MBUS_REG_HRS]>>4)*10) + (mBusRegs[MBUS_REG_HRS]&0x000F));
@@ -422,7 +479,12 @@ void TestCode(void)
         PrintInt(((mBusRegs[MBUS_REG_SEC]>>4)*10) + (mBusRegs[MBUS_REG_SEC]&0x000F));
         Debug_PutString("\r\n");
     #endif
-    ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+
+	#ifndef ICM20648_USE_RTOS_API
+		ICMReadAccDataAll(BOARD_TWI, ICM_ADDR,(uint16_t*)accVals);
+	#else
+		ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+	#endif
     GetOrientation(accVals, oriVals);
     #ifdef DEBUG_EN
         Debug_PutString("X = ");
@@ -453,14 +515,14 @@ void TestCode(void)
         //Disable Charge Ctrlr
 		//ccEn = 0;
         //Turn Motor On
-		gpio_set_pin_high(PIN_MOTOR_RST_IDX);
+		//gpio_set_pin_high(PIN_MOTOR_RST_IDX);
     }
     else
     {
         //Enable Charge Ctrlr
         //ccEn = 1;
         //Turn Motor Off
-        gpio_set_pin_low(PIN_MOTOR_RST_IDX);
+        //gpio_set_pin_low(PIN_MOTOR_RST_IDX);
     }
 }
 

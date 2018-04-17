@@ -116,25 +116,53 @@ void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len)
         switch(regAddr)
         {
             case MBUS_REG_SEC:
-                DSSetSecsTo(twiPort, mbusBuff[regAddr],50);
+				#ifndef DS3231_USE_RTOS_API
+					DSSetSecs(BOARD_TWI, mbusBuff[regAddr]);
+				#else
+					DSSetSecsTo(twiPort, mbusBuff[regAddr],50);
+				#endif
                 break;
             case MBUS_REG_MIN:
-                DSSetMinsTo(twiPort, mbusBuff[regAddr],50);
+				#ifndef DS3231_USE_RTOS_API
+					DSSetMins(BOARD_TWI, mbusBuff[regAddr]);
+				#else
+					DSSetMinsTo(twiPort, mbusBuff[regAddr],50);
+				#endif
                 break;
             case MBUS_REG_HRS:
-                DSSetHrsTo(twiPort, mbusBuff[regAddr],50);
+				#ifndef DS3231_USE_RTOS_API
+					DSSetHrs(BOARD_TWI, mbusBuff[regAddr]);
+				#else
+					DSSetHrsTo(twiPort, mbusBuff[regAddr],50);
+				#endif
                 break;
             case MBUS_REG_DAY:
-                DSSetDayTo(twiPort, mbusBuff[regAddr],50);
+				#ifndef DS3231_USE_RTOS_API
+					DSSetDay(BOARD_TWI, mbusBuff[regAddr]);
+				#else
+					DSSetDayTo(twiPort, mbusBuff[regAddr],50);
+				#endif
                 break;
             case MBUS_REG_DD:
-                DSSetDateTo(twiPort, mbusBuff[regAddr],50);
+				#ifndef DS3231_USE_RTOS_API
+					DSSetDate(BOARD_TWI, mbusBuff[regAddr]);
+				#else
+					DSSetDateTo(twiPort, mbusBuff[regAddr],50);
+				#endif
                 break;
             case MBUS_REG_MM:
-                DSSetMonthTo(twiPort, mbusBuff[regAddr],50);
+				#ifndef DS3231_USE_RTOS_API
+					DSSetMonth(BOARD_TWI, mbusBuff[regAddr]);
+				#else
+					DSSetMonthTo(twiPort, mbusBuff[regAddr],50);
+				#endif
                 break;
             case MBUS_REG_YY:
-                DSSetYearTo(twiPort, mbusBuff[regAddr],50);
+				#ifndef DS3231_USE_RTOS_API
+					DSSetYear(BOARD_TWI, mbusBuff[regAddr]);
+				#else
+					DSSetYearTo(twiPort, mbusBuff[regAddr],50);
+				#endif
                 break;
             case MBUS_REG_LATH:
                 ptr = (uint16_t*)&lat;
@@ -209,7 +237,7 @@ void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len)
                 mBusRegs[MBUS_REG_MOTON] = 0;
                 minCtr = 0;
                 //Turn Motor Off
-				gpio_set_pin_low(PIN_MOTOR_RST_IDX);
+				//gpio_set_pin_low(PIN_MOTOR_RST_IDX);
                 gpio_set_pin_low(PIN_MOTOR_A_IDX);
 				gpio_set_pin_low(PIN_MOTOR_B_IDX);
                 break;

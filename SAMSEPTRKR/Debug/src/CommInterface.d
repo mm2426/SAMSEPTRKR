@@ -163,8 +163,8 @@ src/CommInterface.d src/CommInterface.o: ../src/CommInterface.c \
  ../src/ASF/sam/drivers/pio/pio_handler.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
- ../src/DS3231RTOS.h ../src/rs485pdc.h ../src/mbusStack.h \
- ../src/PvTracker.h ../src/ICM20648RTOS.h \
+ ../src/DS3231.h ../src/rs485pdc.h ../src/mbusStack.h ../src/PvTracker.h \
+ ../src/ICM20648.h ../src/AT24C08.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h
 
 ../src/CommInterface.h:
@@ -505,7 +505,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h:
 
-../src/DS3231RTOS.h:
+../src/DS3231.h:
 
 ../src/rs485pdc.h:
 
@@ -513,6 +513,8 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/PvTracker.h:
 
-../src/ICM20648RTOS.h:
+../src/ICM20648.h:
+
+../src/AT24C08.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h:

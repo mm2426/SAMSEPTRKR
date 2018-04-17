@@ -1,8 +1,6 @@
 
 //#define BOARD USER_BOARD
 
-#define LED_PIO		PIOC
-
 #include <asf.h>
 #include "conf_board.h"
 #include "conf_clock.h"
@@ -44,7 +42,7 @@ int main (void)
 	delay_init(sysclk_get_cpu_hz());
 
 	vInitPeripherals();
-    
+	
     /* Enable global interrupts. */   
     
 //     xTaskCreate(vCCTask, "Cc", 100, NULL, 2, NULL);
@@ -79,8 +77,12 @@ void vInitPeripherals( void )
 		Debug_Start();
 	#endif
 	
+	gpio_set_pin_low(PIN_LDOEN_IDX);
+	delay_ms(500);
+	/* Enable LDO */
+	gpio_set_pin_high(PIN_LDOEN_IDX);
 	delay_ms(1000);
-	
+
 	/* Initialize all RTOS vars */
 	//vCCInit();
 	vPvTrackerInit();
@@ -91,9 +93,9 @@ void vBlinkTask( void *pvParameters )
 {
 	while(1)
 	{
-		gpio_set_pin_high(PIN_DEBUGLED_IDX);
+		//gpio_set_pin_high(PIN_DEBUGLED_IDX);
 		vTaskDelay(500);
-		gpio_set_pin_low(PIN_DEBUGLED_IDX);
+		//gpio_set_pin_low(PIN_DEBUGLED_IDX);
 		vTaskDelay(500);
 	}
 }

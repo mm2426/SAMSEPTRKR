@@ -73,7 +73,11 @@
 	#include "FreeRTOS.h"
     #include "task.h"
     #include "semphr.h"
-    #include "DS3231RTOS.h"
+	#ifndef DS3231_USE_RTOS_API
+		#include "DS3231.h"
+	#else
+		#include "DS3231RTOS.h"
+	#endif
 	#include "rs485pdc.h"
     #include "mbusStack.h"
 

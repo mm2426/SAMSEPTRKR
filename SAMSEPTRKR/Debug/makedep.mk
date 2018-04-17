@@ -10,7 +10,15 @@ src\ASF\sam\drivers\efc\efc.c
 
 src\ASF\sam\services\flash_efc\flash_efc.c
 
+src\AT24C08.c
+
+src\AT24C08RTOS.c
+
+src\DS3231.c
+
 src\DS3231RTOS.c
+
+src\ICM20648.c
 
 src\ICM20648RTOS.c
 

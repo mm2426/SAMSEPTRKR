@@ -27,18 +27,25 @@ void board_init(void)
 
 	//Configure USART0 Pins (RS485, MODBUS)
 	gpio_configure_group(PINS_USART0_PIO, PINS_USART0, PINS_USART0_FLAGS);
+
+	//Configure USART1 Pins (XBee).
+	gpio_configure_group(PINS_USART1_PIO, PINS_USART1, PINS_USART1_FLAGS);
 	
 	//Configure TWI0 Pins
 	gpio_configure_group(PINS_TWI0_PIO, PINS_TWI0, PINS_TWI0_FLAGS);
 
 	//Configure Motor Controller Pins
-	gpio_configure_pin(PIN_MOTOR_RST_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
 	gpio_configure_pin(PIN_MOTOR_A_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
 	gpio_configure_pin(PIN_MOTOR_B_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+	gpio_configure_pin(PIN_MOTOR_SLP_IDX, (PIO_INPUT | PIO_OPENDRAIN));
+	gpio_configure_pin(PIN_MOTOR_OCL_IDX, (PIO_INPUT | PIO_OPENDRAIN));
 
 	/* Configure LED Pins */
 	gpio_configure_pin(PIN_DEBUGLED_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
 
+	/* Configure LDO EN Pin */
+	gpio_configure_pin(PIN_LDOEN_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+	
 	//Configure RTC 1 min Interrupt Pin
 	gpio_configure_pin(PIN_RTC_INT_IDX, PIO_INPUT);
 

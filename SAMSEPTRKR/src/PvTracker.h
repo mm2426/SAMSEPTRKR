@@ -60,8 +60,21 @@
     #define EE_REG_PNLRNG3			(EE_REG_BASE + 25)
     
     #include "FreeRTOS.h"
-    #include "DS3231RTOS.h"
-    #include "ICM20648RTOS.h"
+	#ifndef DS3231_USE_RTOS_API
+		#include "DS3231.h"
+	#else
+		#include "DS3231RTOS.h"
+	#endif
+	#ifndef ICM20648_USE_RTOS_API
+		#include "ICM20648.h"
+	#else
+		#include "ICM20648RTOS.h"
+	#endif
+	#if defined(AT24C08_USE_RTOS_API)
+		#include "AT24C08RTOS.h"
+	#else
+		#include "AT24C08.h"
+	#endif
     #include "CommInterface.h"
     #include <stdio.h>
     #include <math.h>

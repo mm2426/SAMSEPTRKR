@@ -31,6 +31,12 @@
 #define PINS_USART1				(PIO_PA21A_RXD1 | PIO_PA22A_TXD1 | PIO_PA24A_RTS1)
 #define PINS_USART1_FLAGS		(PIO_PERIPH_A | PIO_DEFAULT)
 
+/* UART0 Definitions (Console Port) */
+#define PINS_UART0_PIO			PIOA
+/** UART0 pins (URXD0, UTXD0) definitions, PA9,10. */
+#define PINS_UART0				(PIO_PA9A_URXD0 | PIO_PA10A_UTXD0)
+#define PINS_UART0_FLAGS		(PIO_PERIPH_A | PIO_DEFAULT)
+
 /* TWI0 Definitions (Accelerometer, RTC, EEPROM, ADC) */
 #define PINS_TWI0_PIO			PIOA
 /* TWI0 pins (TWCK0 & TWD0) definitions, PA4, 3. */
@@ -38,11 +44,15 @@
 #define PINS_TWI0_FLAGS			(PIO_PERIPH_A | PIO_DEFAULT)
 
 /* Motor Controller Pins */
-#define PIN_MOTOR_A_IDX			PIO_PB0_IDX
-#define PIN_MOTOR_B_IDX			PIO_PB1_IDX
-/* (Inputs to the MCU)*/
-#define PIN_MOTOR_SLP_IDX		PIO_PB2_IDX
-#define PIN_MOTOR_OCL_IDX		PIO_PB3_IDX
+#ifndef MOTOR_CTRL_A4955
+	
+#else
+	#define PIN_MOTOR_IN1_IDX		PIO_PB0_IDX
+	#define PIN_MOTOR_IN2_IDX		PIO_PB1_IDX
+	#define PIN_MOTOR_SLP_IDX		PIO_PB2_IDX
+	/* (Inputs to the MCU)*/
+	#define PIN_MOTOR_OCL_IDX		PIO_PB3_IDX
+#endif
 
 /* Debug LED Pin */
 #define PIN_DEBUGLED_IDX		PIO_PA16_IDX
@@ -56,6 +66,7 @@
 #define PIN_RTC_INT_MASK		PIO_PA0
 #define PIN_RTC_INT_IDX			PIO_PA0_IDX
 
+/* RTC 1 Min ISR */
 void RTCIntHandler(uint32_t ul_id, uint32_t ul_mask);
 
 #endif // USER_BOARD_H

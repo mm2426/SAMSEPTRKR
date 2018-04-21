@@ -6,6 +6,10 @@ src\ASF\common\drivers\nvm\sam\sam_nvm.c
 
 src\ASF\common\services\freertos\sam\freertos_peripheral_control.c
 
+src\ASF\common\utils\stdio\read.c
+
+src\ASF\common\utils\stdio\write.c
+
 src\ASF\sam\drivers\efc\efc.c
 
 src\ASF\sam\services\flash_efc\flash_efc.c
@@ -13,6 +17,8 @@ src\ASF\sam\services\flash_efc\flash_efc.c
 src\AT24C08.c
 
 src\AT24C08RTOS.c
+
+src\consoleuart.c
 
 src\DS3231.c
 

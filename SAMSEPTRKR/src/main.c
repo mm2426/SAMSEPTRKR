@@ -11,6 +11,7 @@
 // #include "ChargeCtrl.h"
 #include "PvTracker.h"
 #include "CommInterface.h"
+#include "consoleuart.h"
 
 /* Function Declarations */
 /* Installs the RTOS interrupt handlers and starts the peripherals. */
@@ -36,14 +37,12 @@ int main (void)
 {
 	/* Insert system clock initialization code here (sysclk_init()). */
 	sysclk_init();
-
 	/* Initialize all peripherals */
 	board_init();
 	delay_init(sysclk_get_cpu_hz());
-
-	vInitPeripherals();
 	
-    /* Enable global interrupts. */   
+	vInitPeripherals();
+	/* Enable global interrupts. */   
     
 //     xTaskCreate(vCCTask, "Cc", 100, NULL, 2, NULL);
     xTaskCreate(vPvTrackerTask, (const signed char *)"Pv", 300, NULL, 1, NULL);
@@ -57,13 +56,13 @@ int main (void)
 	for( ;; );
 }
 
-// void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
-// {
-// 	/* The stack space has been execeeded for a task, considering allocating more. */
-// 	taskDISABLE_INTERRUPTS();
-// 	for( ;; );
-// }
-// 
+void vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName )
+{
+	/* The stack space has been execeeded for a task, considering allocating more. */
+	taskDISABLE_INTERRUPTS();
+	for( ;; );
+}
+
 void vApplicationMallocFailedHook( void )
 {
 	/* The heap space has been execeeded. */
@@ -74,7 +73,7 @@ void vApplicationMallocFailedHook( void )
 void vInitPeripherals( void )
 {
 	#if defined(DEBUG_EN) || defined(LOG_EN)
-		Debug_Start();
+		ConsoleInit();
 	#endif
 	
 	gpio_set_pin_low(PIN_LDOEN_IDX);
@@ -93,10 +92,10 @@ void vBlinkTask( void *pvParameters )
 {
 	while(1)
 	{
-		//gpio_set_pin_high(PIN_DEBUGLED_IDX);
-		vTaskDelay(500);
-		//gpio_set_pin_low(PIN_DEBUGLED_IDX);
-		vTaskDelay(500);
+		gpio_set_pin_high(PIN_DEBUGLED_IDX);
+		vTaskDelay(500 / portTICK_RATE_MS);
+		gpio_set_pin_low(PIN_DEBUGLED_IDX);
+		vTaskDelay(500 / portTICK_RATE_MS);
 	}
 }
 

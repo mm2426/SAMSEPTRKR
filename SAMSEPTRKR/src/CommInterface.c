@@ -27,7 +27,7 @@ extern float lat, lon;
 extern float timeZone, dist, width;
 //Panels will track +/-pvAngleRng degrees. 
 extern float pvAngleRng;
-extern uint8_t minCtr;
+volatile extern uint8_t minCtr;
 
 extern freertos_twi_if twiPort;
 
@@ -238,8 +238,8 @@ void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len)
                 minCtr = 0;
                 //Turn Motor Off
 				//gpio_set_pin_low(PIN_MOTOR_RST_IDX);
-                gpio_set_pin_low(PIN_MOTOR_A_IDX);
-				gpio_set_pin_low(PIN_MOTOR_B_IDX);
+                gpio_set_pin_low(PIN_MOTOR_IN1_IDX);
+				gpio_set_pin_low(PIN_MOTOR_IN2_IDX);
                 break;
             default:
                 break;

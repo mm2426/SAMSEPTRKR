@@ -152,19 +152,19 @@ src/PvTracker.d src/PvTracker.o: ../src/PvTracker.c ../src/PvTracker.h \
  ../src/ASF/common/services/ioport/sam/ioport_pio.h \
  ../src/ASF/common/drivers/nvm/common_nvm.h \
  ../src/ASF/sam/drivers/pmc/sleep.h \
+ ../src/ASF/common/utils/stdio/stdio_serial/stdio_serial.h \
+ ../src/ASF/common/services/serial/serial.h \
+ ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
+ ../src/ASF/sam/drivers/uart/uart.h ../src/config/conf_uart_serial.h \
  ../src/ASF/common/services/twi/sam_twi/twi_master.h \
  ../src/ASF/common/services/twi/sam_twi/twi_slave.h \
  ../src/ASF/common/services/twi/twi_slave.h \
  ../src/ASF/common/services/twi/sam_twi/twi_slave.h \
- ../src/ASF/sam/drivers/uart/uart.h \
- ../src/ASF/common/services/serial/serial.h \
- ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
- ../src/config/conf_uart_serial.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h ../src/ICM20648.h \
  ../src/AT24C08.h ../src/CommInterface.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
- ../src/rs485pdc.h ../src/mbusStack.h \
+ ../src/rs485pdc.h ../src/mbusStack.h ../src/consoleuart.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h
 
 ../src/PvTracker.h:
@@ -485,6 +485,16 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/sam/drivers/pmc/sleep.h:
 
+../src/ASF/common/utils/stdio/stdio_serial/stdio_serial.h:
+
+../src/ASF/common/services/serial/serial.h:
+
+../src/ASF/common/services/serial/sam_uart/uart_serial.h:
+
+../src/ASF/sam/drivers/uart/uart.h:
+
+../src/config/conf_uart_serial.h:
+
 ../src/ASF/common/services/twi/sam_twi/twi_master.h:
 
 ../src/ASF/common/services/twi/sam_twi/twi_slave.h:
@@ -492,14 +502,6 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/ASF/common/services/twi/twi_slave.h:
 
 ../src/ASF/common/services/twi/sam_twi/twi_slave.h:
-
-../src/ASF/sam/drivers/uart/uart.h:
-
-../src/ASF/common/services/serial/serial.h:
-
-../src/ASF/common/services/serial/sam_uart/uart_serial.h:
-
-../src/config/conf_uart_serial.h:
 
 ../src/ASF/sam/drivers/pio/pio_handler.h:
 
@@ -516,5 +518,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/rs485pdc.h:
 
 ../src/mbusStack.h:
+
+../src/consoleuart.h:
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h:

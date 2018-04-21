@@ -36,34 +36,33 @@
 
  /* Init RTC 1 min Alarm */
  #ifndef DS3231_USE_RTOS_API
- //DSEnAL2(BOARD_TWI, 1);
- DSEnAL1(BOARD_TWI, 1);
+	DSEnAL2(BOARD_TWI, 1);
  #else
- DSEnAL2To(twiPort, 1, 50);
+	DSEnAL2To(twiPort, 1, 50);
  #endif
 
  while(1)
  {
 	 /* Clear RTC interrupt flag */
 	 #ifndef DS3231_USE_RTOS_API
-	 DSReadByte(BOARD_TWI, DS_REG_STAT,&status);
+		DSReadByte(BOARD_TWI, DS_REG_STAT,&status);
 	 #else
-	 DSReadByteTo(twiPort, DS_REG_STAT,&status, 50);
+		DSReadByteTo(twiPort, DS_REG_STAT,&status, 50);
 	 #endif
 	 
 	 if(status&0x02)
 	 {
 		 /* Clear Status Reg */
 		 #ifndef DS3231_USE_RTOS_API
-		 DSWriteByte(BOARD_TWI, DS_REG_STAT, 0x00);
+			DSWriteByte(BOARD_TWI, DS_REG_STAT, 0x00);
 		 #else
-		 DSWriteByteTo(twiPort, DS_REG_STAT, 0x00, 100);
+			DSWriteByteTo(twiPort, DS_REG_STAT, 0x00, 100);
 		 #endif
 	 }
 	 #ifndef DS3231_USE_RTOS_API
-	 DSGetTime(BOARD_TWI, (uint16_t *)&mBusRegs[MBUS_REG_SEC]);
+		DSGetTime(BOARD_TWI, (uint16_t *)&mBusRegs[MBUS_REG_SEC]);
 	 #else
-	 DSGetTimeTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_SEC], 50);
+		DSGetTimeTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_SEC], 50);
 	 #endif
 
 	 gpio_toggle_pin(PIN_DEBUGLED_IDX);
@@ -86,12 +85,25 @@
  while(1)
  {
 	 #ifndef ICM20648_USE_RTOS_API
-	 ICMReadAccDataAll(BOARD_TWI, ICM_ADDR,(uint16_t*)accVals);
+		ICMReadAccDataAll(BOARD_TWI, ICM_ADDR,(uint16_t*)accVals);
 	 #else
-	 ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+		ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
 	 #endif
 	 GetOrientation(accVals, oriVals);
 	 vTaskDelay(500);
  }
 
  /************************** ACCELEROMETER TEST NON RTOS END *********************************/
+
+ /************************** MOTOR DRIVE TEST NON RTOS START *********************************/
+ gpio_set_pin_high(PIN_MOTOR_SLP_IDX);
+ while(1)
+ {
+	 gpio_set_pin_high(PIN_MOTOR_IN1_IDX);
+	 gpio_set_pin_low(PIN_MOTOR_IN2_IDX);
+	 delay_ms(2000);
+	 gpio_set_pin_low(PIN_MOTOR_IN1_IDX);
+	 gpio_set_pin_high(PIN_MOTOR_IN2_IDX);
+	 delay_ms(2000);
+ }
+ /************************** MOTOR DRIVE TEST NON RTOS END *********************************/

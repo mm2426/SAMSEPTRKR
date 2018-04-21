@@ -30,6 +30,7 @@
       <framework-data>
         <options>
           <option id="common.boards" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="common.drivers.nvm" value="Add" config="no_extmem" content-id="Atmel.ASF" />
           <option id="common.services.basic.clock" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.delay" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.layer.freertos.pdc" value="Add" config="" content-id="Atmel.ASF" />
@@ -38,8 +39,8 @@
           <option id="common.services.basic.gpio" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.ioport" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils.interrupt" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="common.drivers.nvm" value="Add" config="no_extmem" content-id="Atmel.ASF" />
           <option id="thirdparty.os.freertos.version" value="Add" config="7.3.0" content-id="Atmel.ASF" />
+          <option id="common.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.utils.linker_scripts#atsam4s4" value="Add" config="" content-id="Atmel.ASF" />
         </options>
         <configurations>
@@ -255,6 +256,9 @@
           <file path="src/ASF/common/drivers/nvm/sam/sam_nvm.c" framework="" version="3.35.1" source="common\drivers\nvm\sam\sam_nvm.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common/drivers/nvm/common_nvm.h" framework="" version="3.35.1" source="common\drivers\nvm\common_nvm.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/Config/conf_nvm.h" framework="" version="3.35.1" source="common\drivers\nvm\sam\module_config\conf_nvm.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/common/utils/stdio/write.c" framework="" version="3.35.1" source="common\utils\stdio\write.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/common/utils/stdio/stdio_serial/stdio_serial.h" framework="" version="3.35.1" source="common\utils\stdio\stdio_serial\stdio_serial.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/common/utils/stdio/read.c" framework="" version="3.35.1" source="common\utils\stdio\read.c" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.35.1/common.applications.user_application.user_board.sam4s/html/index.html" />
         <offline-documentation help="" />
@@ -355,6 +359,7 @@
       <Value>../src/ASF/sam/drivers/efc</Value>
       <Value>../src/ASF/sam/services/flash_efc</Value>
       <Value>../src/ASF/common/drivers/nvm</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -408,6 +413,7 @@
       <Value>../src/ASF/sam/drivers/efc</Value>
       <Value>../src/ASF/sam/services/flash_efc</Value>
       <Value>../src/ASF/common/drivers/nvm</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM4=true -DBOARD=USER_BOARD -Dprintf=iprintf -Dscanf=iscanf -D__FREERTOS__</armgcc.preprocessingassembler.general.AssemblerFlags>
@@ -444,6 +450,7 @@
       <Value>../src/ASF/sam/drivers/efc</Value>
       <Value>../src/ASF/sam/services/flash_efc</Value>
       <Value>../src/ASF/common/drivers/nvm</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -465,6 +472,7 @@
       <Value>ARM_MATH_CM4=true</Value>
       <Value>printf=iprintf</Value>
       <Value>__FREERTOS__</Value>
+      <Value>MOTOR_CTRL_A4955</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -500,6 +508,7 @@
       <Value>../src/ASF/sam/drivers/efc</Value>
       <Value>../src/ASF/sam/services/flash_efc</Value>
       <Value>../src/ASF/common/drivers/nvm</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
@@ -554,6 +563,7 @@
       <Value>../src/ASF/sam/drivers/efc</Value>
       <Value>../src/ASF/sam/services/flash_efc</Value>
       <Value>../src/ASF/common/drivers/nvm</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
@@ -591,6 +601,7 @@
       <Value>../src/ASF/sam/drivers/efc</Value>
       <Value>../src/ASF/sam/services/flash_efc</Value>
       <Value>../src/ASF/common/drivers/nvm</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -623,6 +634,8 @@
     <Folder Include="src\ASF\common\services\twi\sam_twi\" />
     <Folder Include="src\ASF\common\utils\" />
     <Folder Include="src\ASF\common\utils\interrupt\" />
+    <Folder Include="src\ASF\common\utils\stdio\" />
+    <Folder Include="src\ASF\common\utils\stdio\stdio_serial\" />
     <Folder Include="src\ASF\sam\" />
     <Folder Include="src\ASF\sam\drivers\" />
     <Folder Include="src\ASF\sam\drivers\efc\" />
@@ -679,6 +692,15 @@
     <Compile Include="src\ASF\common\services\freertos\sam\freertos_peripheral_control.c">
       <SubType>compile</SubType>
     </Compile>
+    <None Include="src\ASF\common\utils\stdio\stdio_serial\stdio_serial.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\common\utils\stdio\read.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\common\utils\stdio\write.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\sam\drivers\efc\efc.c">
       <SubType>compile</SubType>
     </Compile>
@@ -704,6 +726,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\AT24C08RTOS.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\consoleuart.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\consoleuart.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\DS3231.c">

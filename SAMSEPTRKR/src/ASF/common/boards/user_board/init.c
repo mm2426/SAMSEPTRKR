@@ -25,20 +25,26 @@ void board_init(void)
 	/* Init IO Port service to enable configuring pins */
 	ioport_init();
 
-	//Configure USART0 Pins (RS485, MODBUS)
+	/* Configure USART0 Pins (RS485, MODBUS) */
 	gpio_configure_group(PINS_USART0_PIO, PINS_USART0, PINS_USART0_FLAGS);
 
-	//Configure USART1 Pins (XBee).
+	/* Configure USART1 Pins (XBee) */
 	gpio_configure_group(PINS_USART1_PIO, PINS_USART1, PINS_USART1_FLAGS);
+
+	/* Configure UART0 Pins (Console) */
+	gpio_configure_group(PINS_UART0_PIO, PINS_UART0, PINS_UART0_FLAGS);
 	
-	//Configure TWI0 Pins
+	/* Configure TWI0 Pins */
 	gpio_configure_group(PINS_TWI0_PIO, PINS_TWI0, PINS_TWI0_FLAGS);
 
-	//Configure Motor Controller Pins
-	gpio_configure_pin(PIN_MOTOR_A_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
-	gpio_configure_pin(PIN_MOTOR_B_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
-	gpio_configure_pin(PIN_MOTOR_SLP_IDX, (PIO_INPUT | PIO_OPENDRAIN));
-	gpio_configure_pin(PIN_MOTOR_OCL_IDX, (PIO_INPUT | PIO_OPENDRAIN));
+	/* Configure Motor Controller Pins */
+	#ifndef MOTOR_CTRL_A4955
+	#else
+		gpio_configure_pin(PIN_MOTOR_IN1_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+		gpio_configure_pin(PIN_MOTOR_IN2_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+		gpio_configure_pin(PIN_MOTOR_SLP_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
+		gpio_configure_pin(PIN_MOTOR_OCL_IDX, (PIO_INPUT | PIO_OPENDRAIN));
+	#endif
 
 	/* Configure LED Pins */
 	gpio_configure_pin(PIN_DEBUGLED_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
@@ -46,7 +52,7 @@ void board_init(void)
 	/* Configure LDO EN Pin */
 	gpio_configure_pin(PIN_LDOEN_IDX, (PIO_OUTPUT_0 | PIO_DEFAULT));
 	
-	//Configure RTC 1 min Interrupt Pin
+	/* Configure RTC 1 min Interrupt Pin */
 	gpio_configure_pin(PIN_RTC_INT_IDX, PIO_INPUT);
 
 	/* Initialize PIOs interrupt handlers (see PIO definition in board.h). */

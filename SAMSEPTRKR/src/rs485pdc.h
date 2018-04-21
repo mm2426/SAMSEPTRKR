@@ -16,8 +16,8 @@
 #include "gpio.h"
 #include "ioport.h"
 
-#define RS485_USART					USART0
-#define RS485_USART_ID				ID_USART0
+#define RS485_USART					USART1
+#define RS485_USART_ID				ID_USART1
 #define RS485_BAUDRATE				9600
 
 /* Size of the receive buffer and transmit buffer. */

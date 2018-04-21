@@ -67,6 +67,12 @@
     /* Width of Panels (Flt) */
     #define MBUS_REG_WIDTHL         34
     #define MBUS_REG_WIDTHH         35
+	/* Backtracking Param 1 (Flt) */
+	#define MBUS_REG_BKPARAM1L      36
+	#define MBUS_REG_BKPARAM1H      37
+	/* Backtracking Param 2 (Flt) */
+	#define MBUS_REG_BKPARAM2L		38
+	#define MBUS_REG_BKPARAM2H		39
     
     #include <asf.h>
 	#include <string.h>

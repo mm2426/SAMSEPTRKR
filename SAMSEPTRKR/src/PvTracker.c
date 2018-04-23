@@ -108,8 +108,7 @@ void vPvTrackerTask(void *pvParameters)
             /* In Manual Mode */
             TestCode();
         }
-        //vTaskDelay(pdMS_TO_TICKS(1000));
-		vTaskDelay(200);
+		vTaskDelay(200 / portTICK_RATE_MS);
     }
 }
 

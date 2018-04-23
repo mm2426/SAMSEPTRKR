@@ -58,21 +58,18 @@
     /* Bat Temperature (Flt) */
     #define MBUS_REG_TEMPL          28
     #define MBUS_REG_TEMPH          29
-    /* Reference Resitance Val (Flt) */
-    #define MBUS_REG_REFRL          30
-    #define MBUS_REG_REFRH          31
     /* Distance B/W panels (Flt) */
-    #define MBUS_REG_DISTL          32
-    #define MBUS_REG_DISTH          33
+    #define MBUS_REG_DISTL          30
+    #define MBUS_REG_DISTH          31
     /* Width of Panels (Flt) */
-    #define MBUS_REG_WIDTHL         34
-    #define MBUS_REG_WIDTHH         35
+    #define MBUS_REG_WIDTHL         32
+    #define MBUS_REG_WIDTHH         33
 	/* Backtracking Param 1 (Flt) */
-	#define MBUS_REG_BKPARAM1L      36
-	#define MBUS_REG_BKPARAM1H      37
+	#define MBUS_REG_BKPARAM1L      34
+	#define MBUS_REG_BKPARAM1H      35
 	/* Backtracking Param 2 (Flt) */
-	#define MBUS_REG_BKPARAM2L		38
-	#define MBUS_REG_BKPARAM2H		39
+	#define MBUS_REG_BKPARAM2L		36
+	#define MBUS_REG_BKPARAM2H		37
     
     #include <asf.h>
 	#include <string.h>

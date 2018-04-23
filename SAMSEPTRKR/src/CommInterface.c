@@ -53,8 +53,7 @@ void vCommTask(void *pvParameters)
     while(1)
     {
         /* Sleep for some time and check if data recvd */
-        //vTaskDelay(pdMS_TO_TICKS(40));
-		vTaskDelay(40);
+        vTaskDelay(40 / portTICK_RATE_MS);
         
 		recvdBytes = Rs485PdcGetRxBytes();
 		/* Check if data received on 485 */
@@ -110,6 +109,7 @@ void vCommInit(void)
 void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len)
 {
     uint16_t *ptr;
+	uint8_t *ptr8;
     
     while(len)
     {
@@ -168,78 +168,61 @@ void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len)
                 ptr = (uint16_t*)&lat;
                 ptr[1] = mBusRegs[MBUS_REG_LATH];
                 ptr[0] = mBusRegs[MBUS_REG_LATL];
-                //Write to EEPROM
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_LATL], EE_REG_LAT0);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_LATL]>>8), EE_REG_LAT1);
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_LATH], EE_REG_LAT2);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_LATH]>>8), EE_REG_LAT3);
-				nvm_write(INT_FLASH, EE_REG_LAT0, (void *)&mBusRegs[MBUS_REG_LATL], 4);
-
+				/* Update EEPROM */
+				ptr8 = (uint8_t *)&lat;
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_LAT0, ptr8, 4);
                 break;
             case MBUS_REG_LONH:
                 ptr = (uint16_t*)&lon;
                 ptr[1] = mBusRegs[MBUS_REG_LONH];
                 ptr[0] = mBusRegs[MBUS_REG_LONL];
-                //Write to EEPROM
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_LONL], EE_REG_LON0);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_LONL]>>8), EE_REG_LON1);
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_LONH], EE_REG_LON2);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_LONH]>>8), EE_REG_LON3);
-				nvm_write(INT_FLASH, EE_REG_LON0, (void *)&mBusRegs[MBUS_REG_LONL], 4);
+				/* Update EEPROM */
+                ptr8 = (uint8_t *)&lon;
+                WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_LON0, ptr8, 4);
                 break;
             case MBUS_REG_TZH:
                 ptr = (uint16_t*)&timeZone;
                 ptr[1] = mBusRegs[MBUS_REG_TZH];
                 ptr[0] = mBusRegs[MBUS_REG_TZL];
-                //Write to EEPROM
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_TZL], EE_REG_TZ0);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_TZL]>>8), EE_REG_TZ1);
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_TZH], EE_REG_TZ2);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_TZH]>>8), EE_REG_TZ3);
-				nvm_write(INT_FLASH, EE_REG_TZ0, (void *)&mBusRegs[MBUS_REG_TZL], 4);
-                break;
-            case MBUS_REG_REFRH:
+                /* Update EEPROM */
+				ptr8 = (uint8_t *)&timeZone;
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_TZ0, ptr8, 4);
                 break;
             case MBUS_REG_PNLRNGH:
                 ptr = (uint16_t*)&pvAngleRng;
                 ptr[1] = mBusRegs[MBUS_REG_PNLRNGH];
                 ptr[0] = mBusRegs[MBUS_REG_PNLRNGL];
-                //Write to EEPROM
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_PNLRNGL], EE_REG_PNLRNG0);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_PNLRNGL]>>8), EE_REG_PNLRNG1);
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_PNLRNGH], EE_REG_PNLRNG2);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_PNLRNGH]>>8), EE_REG_PNLRNG3);
-				nvm_write(INT_FLASH, EE_REG_PNLRNG0, (void *)&mBusRegs[MBUS_REG_PNLRNGL], 4);
+                /* Update EEPROM */
+				ptr8 = (uint8_t *)&pvAngleRng;
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_PNLRNG0, ptr8, 4);
                 break;
             case MBUS_REG_DISTH:
                 ptr = (uint16_t*)&dist;
                 ptr[1] = mBusRegs[MBUS_REG_DISTH];
                 ptr[0] = mBusRegs[MBUS_REG_DISTL];
-                //Write to EEPROM
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_DISTL], EE_REG_DIST0);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_DISTL]>>8), EE_REG_DIST1);
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_DISTH], EE_REG_DIST2);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_DISTH]>>8), EE_REG_DIST3);
-				nvm_write(INT_FLASH, EE_REG_DIST0, (void *)&mBusRegs[MBUS_REG_DISTL], 4);
+                /* Update EEPROM */
+				ptr8 = (uint8_t *)&dist;
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_DIST0, ptr8, 4);
                 break;
             case MBUS_REG_WIDTHH:
                 ptr = (uint16_t*)&width;
                 ptr[1] = mBusRegs[MBUS_REG_WIDTHH];
                 ptr[0] = mBusRegs[MBUS_REG_WIDTHL];
-                //Write to EEPROM
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_WIDTHL], EE_REG_WIDTH0);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_WIDTHL]>>8), EE_REG_WIDTH1);
-//                 EEPROM0_WriteByte(mBusRegs[MBUS_REG_WIDTHH], EE_REG_WIDTH2);
-//                 EEPROM0_WriteByte((mBusRegs[MBUS_REG_WIDTHH]>>8), EE_REG_WIDTH3);
-				nvm_write(INT_FLASH, EE_REG_WIDTH0, (void *)&mBusRegs[MBUS_REG_WIDTHL], 4);
+                /* Update EEPROM */
+				ptr8 = (uint8_t *)&width;
+                WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_WIDTH0, ptr8, 4);
                 break;
             case MBUS_REG_OPMODE:
                 mBusRegs[MBUS_REG_MOTON] = 0;
                 minCtr = 0;
-                //Turn Motor Off
-				//gpio_set_pin_low(PIN_MOTOR_RST_IDX);
-                gpio_set_pin_low(PIN_MOTOR_IN1_IDX);
-				gpio_set_pin_low(PIN_MOTOR_IN2_IDX);
+                /* Turn Motor Off */
+				#ifndef MOTOR_CTRL_A4955
+					gpio_set_pin_low(PIN_MOTOR_RST_IDX);
+				#else
+					gpio_set_pin_low(PIN_MOTOR_SLP_IDX);
+					gpio_set_pin_low(PIN_MOTOR_IN1_IDX);
+					gpio_set_pin_low(PIN_MOTOR_IN2_IDX);
+				#endif
                 break;
             default:
                 break;
@@ -259,7 +242,7 @@ void SendRespPkt(uint8_t *pkt, uint8_t len)
 
 	/* Wait till tx completes */
 	while(!Rs485PdcGetTxStatus())
-		vTaskDelay(10);
+		vTaskDelay(10 / portTICK_RATE_MS);
 
 	/* 3.5 Char Wait Time */
 

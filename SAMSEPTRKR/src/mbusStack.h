@@ -13,7 +13,7 @@
 #include "user_board.h"
 
 /* Maximum Modbus Registers */
-#define MBUS_MAX_REGS           40
+#define MBUS_MAX_REGS           38
 
 /* Maximum Modbus Registers */
 #ifndef MBUS_MAX_REGS

@@ -13,7 +13,7 @@
 #ifndef __PV_TRACKER_H__
     #define __PV_TRACKER_H__  1
     
-    #define LOG_EN                 1
+    //#define LOG_EN                 1
     //#define DEBUG_EN               1
     
     /* Accelerometer TWI Address */

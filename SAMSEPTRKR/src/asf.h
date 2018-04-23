@@ -62,12 +62,6 @@
 // From module: Delay routines
 #include <delay.h>
 
-// From module: EEFC - Enhanced Embedded Flash Controller
-#include <efc.h>
-
-// From module: Flash - SAM Flash Service API
-#include <flash_efc.h>
-
 // From module: FreeRTOS - PDC Interface Layer
 #include <freertos_peripheral_control.h>
 #include <freertos_peripheral_control_private.h>
@@ -104,9 +98,6 @@
 // From module: Interrupt management - SAM implementation
 #include <interrupt.h>
 
-// From module: NVM - Non volatile memory access
-#include <common_nvm.h>
-
 // From module: PDC - Peripheral DMA Controller Example
 #include <pdc.h>
 
@@ -119,9 +110,6 @@
 
 // From module: Part identification macros
 #include <parts.h>
-
-// From module: Standard serial I/O (stdio) - SAM implementation
-#include <stdio_serial.h>
 
 // From module: System Clock Control - SAM4S implementation
 #include <sysclk.h>

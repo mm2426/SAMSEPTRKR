@@ -42,6 +42,7 @@ int main (void)
 	delay_init(sysclk_get_cpu_hz());
 	
 	vInitPeripherals();
+
 	/* Enable global interrupts. */   
     
 //     xTaskCreate(vCCTask, "Cc", 100, NULL, 2, NULL);

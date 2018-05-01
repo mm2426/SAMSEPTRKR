@@ -25,7 +25,7 @@ float lat = 17.46608f, lon = 78.44009f;
 float timeZone = 5.5f, dist = 5.0f, width = 2.0f;
 //Panels will track +/-pvAngleRng degrees. 
 float pvAngleRng = 43;
-float bkTrkParam1, bkTrkParam2;
+float bkTrkParam1 = 0.028989f, bkTrkParam2 = 1.575f;
 uint8_t bkTrkFlg = 0;
 volatile uint8_t minCtr = 0;
 
@@ -234,8 +234,8 @@ void InitVars(void)
 			pvAngleRng = 43;
 			#warning "Backtracking Parameters uninitialized"
 			/* Backtracking parameters */
-			bkTrkParam1 = 0.0f;
-			bkTrkParam1 = 0.0f;
+			bkTrkParam1 = 0.028989f;
+			bkTrkParam2 = 1.575f;
 			/* Init MODBUS Regs */
 			ptr = (uint16_t*)&lat;
 			mBusRegs[MBUS_REG_LATH] = ptr[1];
@@ -815,8 +815,10 @@ float GetPvBackTrackAngle(float pvAngle)
 	float a0;
 	
 	a0 = pvAngle*0.0174603f;
-	a0 += 1.575f;
-	a0 -= 0.028989f;
+	//a0 += 1.575f;
+	a0 += bkTrkParam2;
+	//a0 -= 0.028989f;
+	a0 -= bkTrkParam1;
 	a0 = sin(a0);
 	a0 = a0 * dist;
 	a0 = a0 / width;

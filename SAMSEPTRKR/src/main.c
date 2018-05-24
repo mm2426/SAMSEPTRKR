@@ -21,15 +21,6 @@ void vInitPeripherals(void);
 void vBlinkTask(void *pvParameters);
 
 /*	*** Updates ***
-	Modified MCK settings to:
-		PLLA SRC = external XTAL.
-		PLLA MUL = 20.
-		PLLA DIV = 1.
-		MCK SRC = PLLA Out = 240/2 = 120MHz.
-
-	Added RS485, Modbus, TWI, NVM, DS3231RTOS and ICM20648RTOS libraries.
-	Ported Tracker and Modbus Tasks.
-	Code untested. 
 
 */
 
@@ -53,7 +44,7 @@ int main (void)
     /* Start Watchdog Timer */
         
     vTaskStartScheduler();
-    
+     
 	for( ;; );
 }
 

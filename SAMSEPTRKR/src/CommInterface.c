@@ -27,6 +27,7 @@ extern float lat, lon;
 extern float timeZone, dist, width;
 //Panels will track +/-pvAngleRng degrees. 
 extern float pvAngleRng;
+extern float bkTrkParam1, bkTrkParam2;
 volatile extern uint8_t minCtr;
 
 extern freertos_twi_if twiPort;
@@ -212,6 +213,22 @@ void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len)
 				ptr8 = (uint8_t *)&width;
                 WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_WIDTH0, ptr8, 4);
                 break;
+			case MBUS_REG_BKPARAM1H:
+				ptr = (uint16_t*)&bkTrkParam1;
+				ptr[1] = mBusRegs[MBUS_REG_BKPARAM1H];
+				ptr[0] = mBusRegs[MBUS_REG_BKPARAM1L];
+				/* Update EEPROM */
+				ptr8 = (uint8_t *)&bkTrkParam1;
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_BKPARAM10, ptr8, 4);
+				break;
+			case MBUS_REG_BKPARAM2H:
+				ptr = (uint16_t*)&bkTrkParam2;
+				ptr[1] = mBusRegs[MBUS_REG_BKPARAM2H];
+				ptr[0] = mBusRegs[MBUS_REG_BKPARAM2L];
+				/* Update EEPROM */
+				ptr8 = (uint8_t *)&bkTrkParam2;
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_BKPARAM20, ptr8, 4);
+				break;
             case MBUS_REG_OPMODE:
                 mBusRegs[MBUS_REG_MOTON] = 0;
                 minCtr = 0;

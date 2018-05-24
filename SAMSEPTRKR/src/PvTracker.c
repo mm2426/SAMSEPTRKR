@@ -121,7 +121,7 @@ void vPvTrackerInit(void)
 	/* Init TWI ADC */
 
 	/* Initialize Variables from EEPROM */
-    InitVars();
+    InitVars(); 
     
     /* Init Motor Controller */
 	#ifndef MOTOR_CTRL_A4955
@@ -232,7 +232,7 @@ void InitVars(void)
 			width = 2.0f;
 			/* Panels will track +/-pvAngleRng degrees. */
 			pvAngleRng = 43;
-			#warning "Backtracking Parameters uninitialized"
+			//#warning "Backtracking Parameters uninitialized"
 			/* Backtracking parameters */
 			bkTrkParam1 = 0.028989f;
 			bkTrkParam2 = 1.575f;

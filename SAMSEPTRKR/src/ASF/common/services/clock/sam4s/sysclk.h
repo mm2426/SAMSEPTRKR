@@ -231,7 +231,7 @@ extern "C" {
 //@}
 
 //! \name Master Clock Sources (MCK)
-//@{
+//@{0
 #define SYSCLK_SRC_SLCK_RC              0       //!< Internal 32kHz RC oscillator as master source clock
 #define SYSCLK_SRC_SLCK_XTAL            1       //!< External 32kHz crystal oscillator as master source clock
 #define SYSCLK_SRC_SLCK_BYPASS          2       //!< External 32kHz bypass oscillator as master source clock

@@ -20,7 +20,7 @@ extern Pdc *rs485PdcBase;
 pdc_packet_t pdcPkt;
 
 //MODBUS Slave Address
-uint8_t slaveAddr = 1;
+//uint8_t slaveAddr = 1;
 
 //Pv tracker variables
 extern float lat, lon;
@@ -79,7 +79,7 @@ void vCommTask(void *pvParameters)
 					pdc_disable_transfer(rs485PdcBase, PERIPH_PTCR_RXTEN);
 
 					/* Parse Received MBUS Pkt, update actual variables */
-					ParseMbusPkt(slaveAddr, rs485RxBuffer, recvdBytes, respBuff, &respLen);
+					ParseMbusPkt(mBusRegs[MBUS_REG_SLA], rs485RxBuffer, recvdBytes, respBuff, &respLen);
 				
 					/* Generate MBus Resp */
 					if(respLen)
@@ -228,6 +228,17 @@ void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len)
 				/* Update EEPROM */
 				ptr8 = (uint8_t *)&bkTrkParam2;
 				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_BKPARAM20, ptr8, 4);
+				break;
+			case MBUS_REG_CLMODEDIR:
+				/* Update EEPROM */
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_CLMODEDIR, (uint8_t *)&mBusRegs[MBUS_REG_CLMODEDIR], 1);
+				break;
+			case MBUS_REG_SLA:
+				if(mBusRegs[MBUS_REG_SLA]!=0)
+				{
+					/* Update EEPROM */
+					WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_SLA, (uint8_t *)&mBusRegs[MBUS_REG_SLA], 1);
+				}
 				break;
             case MBUS_REG_OPMODE:
                 mBusRegs[MBUS_REG_MOTON] = 0;

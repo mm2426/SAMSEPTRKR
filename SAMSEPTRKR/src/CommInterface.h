@@ -48,7 +48,7 @@
     /* Bat Voltage (Flt) */
     #define MBUS_REG_BATVL          22
     #define MBUS_REG_BATVH          23
-    /* Operating Mode (0 = AUTO / 1 = MAN) */
+    /* Operating Mode (0 = AUTO / 1 = MAN / 2 = WINDSPD / 3 = CLEAN) */
     #define MBUS_REG_OPMODE         24
     /* Motor Direction */
     #define MBUS_REG_MOTDR          25
@@ -70,7 +70,18 @@
 	/* Backtracking Param 2 (Flt) */
 	#define MBUS_REG_BKPARAM2L		36
 	#define MBUS_REG_BKPARAM2H		37
-    
+	/* Cleaning Mode Direction (0 = +Max-Rng / 1 = -Max-Rng) */
+	#define MBUS_REG_CLMODEDIR		38
+	/* MODBUS Slave Address Register */
+	#define MBUS_REG_SLA			39
+	
+	/* Tracker Operation Modes */
+	#define TRKR_OPMODE_AUTO		0
+	#define TRKR_OPMODE_MAN			1
+	#define TRKR_OPMODE_WINDSPD		2
+	#define TRKR_OPMODE_CLEAN		3
+
+
     #include <asf.h>
 	#include <string.h>
 	#include "FreeRTOS.h"

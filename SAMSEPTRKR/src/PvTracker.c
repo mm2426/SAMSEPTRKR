@@ -92,7 +92,7 @@ void vPvTrackerTask(void *pvParameters)
 			#endif
         }
         
-        /* In Tracking / Auto Mode */
+        /* In Tracking i.e. Auto Mode */
         if(!mBusRegs[MBUS_REG_OPMODE])
         {
 			/* If Tracking Time Expired */
@@ -103,11 +103,19 @@ void vPvTrackerTask(void *pvParameters)
             }
             /* LED1 Heart Beat Status (No Block) */
         }
-        else
+        else //if(mBusRegs[MBUS_REG_OPMODE] == 1)
         {
-            /* In Manual Mode */
+            /* In Manual / Windspeed / Cleaning Mode */
             TestCode();
         }
+// 		else if(mBusRegs[MBUS_REG_OPMODE] == 2)
+// 		{
+// 			/* Windspeed Mode */
+// 		}
+// 		else if(mBusRegs[MBUS_REG_OPMODE] == 3)
+// 		{
+// 			/* Cleaning Mode */
+// 		}
 		vTaskDelay(200 / portTICK_RATE_MS);
     }
 }
@@ -195,6 +203,12 @@ void InitVars(void)
 			mBusRegs[MBUS_REG_BKPARAM2H] = memBuff[EE_REG_BKPARAM23 - EE_REG_BASE];
 			mBusRegs[MBUS_REG_BKPARAM2H] = (mBusRegs[MBUS_REG_BKPARAM2H]<<8) | memBuff[EE_REG_BKPARAM22 - EE_REG_BASE];
 
+			/* Cleaning Mode Direction Reg */
+			mBusRegs[MBUS_REG_CLMODEDIR] = memBuff[EE_REG_CLMODEDIR - EE_REG_BASE];
+			
+			/* MODBUS Slave Address Register */
+			mBusRegs[MBUS_REG_SLA] = memBuff[EE_REG_SLA - EE_REG_BASE];
+
 			/* Init local vars */
 			ptr = (uint16_t*)&lat;
 			ptr[1] = mBusRegs[MBUS_REG_LATH];
@@ -268,6 +282,10 @@ void InitVars(void)
 			ptr = (uint16_t*)&bkTrkParam2;
 			mBusRegs[MBUS_REG_BKPARAM2H] = ptr[1];
 			mBusRegs[MBUS_REG_BKPARAM2L] = ptr[0];
+			/* Cleaning Mode Direction Reg */
+			mBusRegs[MBUS_REG_CLMODEDIR] = 0;
+			/* MODBUS Slave Address Register */
+			mBusRegs[MBUS_REG_SLA] = 1;
 
 			/* Update EEPROM */
 			ptr8 = (uint8_t *)&lat;
@@ -294,8 +312,14 @@ void InitVars(void)
 			ptr8 = (uint8_t *)&bkTrkParam2;
 			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_BKPARAM20, ptr8, 4);
 
+			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_CLMODEDIR, (uint8_t*)&mBusRegs[MBUS_REG_CLMODEDIR], 1);
+			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_SLA, (uint8_t*)&mBusRegs[MBUS_REG_SLA], 1);
+			//BaudRate, Parity
+
 			memBuff[0] = 0xAB;
 			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_DEFCONFIG, memBuff, 1);
+
+			
 		}
 }
 
@@ -643,36 +667,52 @@ void TestCode(void)
     mBusRegs[MBUS_REG_PVANGLEH] = ptr[1];
     mBusRegs[MBUS_REG_PVANGLEL] = ptr[0];
     
-	if(mBusRegs[MBUS_REG_MOTDR])
+	/* Manual Motor Control Mode */
+	if(mBusRegs[MBUS_REG_OPMODE] == TRKR_OPMODE_MAN)
 	{
-		gpio_set_pin_low(PIN_MOTOR_IN1_IDX);
-		gpio_set_pin_high(PIN_MOTOR_IN2_IDX);
-	}
-	else
-	{
-		gpio_set_pin_high(PIN_MOTOR_IN1_IDX);
-		gpio_set_pin_low(PIN_MOTOR_IN2_IDX);
-	}
+		/* Set Motor Direction */
+		if(mBusRegs[MBUS_REG_MOTDR])
+		{
+			gpio_set_pin_low(PIN_MOTOR_IN1_IDX);
+			gpio_set_pin_high(PIN_MOTOR_IN2_IDX);
+		}
+		else
+		{
+			gpio_set_pin_high(PIN_MOTOR_IN1_IDX);
+			gpio_set_pin_low(PIN_MOTOR_IN2_IDX);
+		}
 
-    if(mBusRegs[MBUS_REG_MOTON])
+		/* Turn Motor On / Off */
+		if(mBusRegs[MBUS_REG_MOTON])
+		{
+			//Disable Charge Ctrlr
+			//ccEn = 0;
+			/* Turn Motor On */
+			#ifndef MOTOR_CTRL_A4955
+			#else
+				gpio_set_pin_high(PIN_MOTOR_SLP_IDX);
+			#endif
+		}
+		else
+		{
+			//Enable Charge Ctrlr
+			//ccEn = 1;
+			/* Turn Motor Off */
+			#ifndef MOTOR_CTRL_A4955
+			#else
+				gpio_set_pin_low(PIN_MOTOR_SLP_IDX);
+			#endif
+		}
+	}
+	/* Wind Speed Motor Control Mode */
+	else if(mBusRegs[MBUS_REG_OPMODE] == TRKR_OPMODE_WINDSPD)
+	{
+		WindSpeedMode();
+	}
+    /* Cleaning Motor Control Mode */
+    else if(mBusRegs[MBUS_REG_OPMODE] == TRKR_OPMODE_CLEAN)
     {
-        //Disable Charge Ctrlr
-		//ccEn = 0;
-        /* Turn Motor On */
-		#ifndef MOTOR_CTRL_A4955
-		#else
-			gpio_set_pin_high(PIN_MOTOR_SLP_IDX);
-		#endif
-    }
-    else
-    {
-        //Enable Charge Ctrlr
-        //ccEn = 1;
-        /* Turn Motor Off */
-		#ifndef MOTOR_CTRL_A4955
-		#else
-			gpio_set_pin_low(PIN_MOTOR_SLP_IDX);
-		#endif
+		CleaningMode();
     }
 }
 
@@ -850,6 +890,89 @@ float Rad(float deg)
 float Deg(float rad)
 {
 	return (180.0f *rad) / (float)M_PI;
+}
+
+void WindSpeedMode(void)
+{
+	int16_t accVals[3] = {};
+	float oriVals[3], error = 0;
+	uint8_t p = 0;
+	float oriX = 0, prevOri = 0;
+
+	for(p = 0; p < 8; p++)
+	{
+		#ifndef ICM20648_USE_RTOS_API
+			ICMReadAccDataAll(BOARD_TWI, ICM_ADDR,(uint16_t*)accVals);
+		#else
+			ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+		#endif
+		GetOrientation(accVals, oriVals);
+		oriX = prevOri + ((oriVals[0] - prevOri)/((float)(p+1)));
+		prevOri = oriX;
+		delay_ms(40);
+	}
+	oriVals[0] = oriX;
+
+	/* Wind Speed Target Angle is 0 degrees */
+	error = -oriVals[0];
+
+	/* If error is greater than the tolerance, move motor */
+	if(!((error >=-1)&&(error<1)))
+	{
+		taskENTER_CRITICAL();
+		GotoAngle(0.0f);
+		taskEXIT_CRITICAL();
+	}
+}
+
+void CleaningMode(void)
+{
+	int16_t accVals[3] = {};
+	float oriVals[3], error = 0;
+	uint8_t p = 0;
+	float oriX = 0, prevOri = 0;
+
+	taskENTER_CRITICAL();
+
+	for(p = 0; p < 8; p++)
+	{
+		#ifndef ICM20648_USE_RTOS_API
+			ICMReadAccDataAll(BOARD_TWI, ICM_ADDR,(uint16_t*)accVals);
+		#else
+			ICMReadAccDataAllTo(twiPort, ICM_ADDR,(uint16_t*)accVals, 50);
+		#endif
+		GetOrientation(accVals, oriVals);
+		oriX = prevOri + ((oriVals[0] - prevOri)/((float)(p+1)));
+		prevOri = oriX;
+		delay_ms(40);
+	}
+	oriVals[0] = oriX;
+
+	if(mBusRegs[MBUS_REG_CLMODEDIR])
+	{
+		error = -pvAngleRng - oriVals[0];
+	}
+	else
+	{
+		error = pvAngleRng - oriVals[0];
+	}
+
+	/* If error is greater than the tolerance, move motor */
+	if(!((error >=-1)&&(error<1)))
+	{
+		/* Cleaning Mode Motor Direction */
+		if(mBusRegs[MBUS_REG_CLMODEDIR])
+		{
+			/* Anticlockwise */
+			GotoAngle(-pvAngleRng);
+		}
+		else
+		{
+			/* Clockwise */
+			GotoAngle(pvAngleRng);
+		}
+	}
+	taskEXIT_CRITICAL();
 }
 
 /* [] END OF FILE */

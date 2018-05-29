@@ -71,11 +71,15 @@
 	#define EE_REG_BKPARAM21		(EE_REG_BASE + 29)
 	#define EE_REG_BKPARAM22		(EE_REG_BASE + 30)
 	#define EE_REG_BKPARAM23		(EE_REG_BASE + 31)
+	/* Cleaning Mode Direction */
+	#define EE_REG_CLMODEDIR		(EE_REG_BASE + 32)
+	/* MODBUS Slave Address */
+	#define EE_REG_SLA				(EE_REG_BASE + 33)
 
 	/* Detect whether to load default configuration or not. 
 	*  Make sure that this is the last variable to be stored in the memory. 
 	*/
-	#define EE_REG_DEFCONFIG		(EE_REG_BASE + 32)
+	#define EE_REG_DEFCONFIG		(EE_REG_BASE + 34)
     
     #include "FreeRTOS.h"
 	#ifndef DS3231_USE_RTOS_API
@@ -118,6 +122,8 @@
     float GetPvBackTrackAngle(float pvAngle);
     float Rad(float deg);
     float Deg(float rad);
+	void WindSpeedMode(void);
+	void CleaningMode(void);
     
 #endif
 

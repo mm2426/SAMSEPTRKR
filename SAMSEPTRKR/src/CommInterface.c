@@ -17,6 +17,9 @@
 //MODBUS Register Values
 extern uint16_t mBusRegs[MBUS_MAX_REGS];
 extern Pdc *rs485PdcBase;
+extern uint32_t rs485BaudRate;
+extern uint32_t rs485Parity;
+
 pdc_packet_t pdcPkt;
 
 //MODBUS Slave Address
@@ -31,6 +34,8 @@ extern float bkTrkParam1, bkTrkParam2;
 volatile extern uint8_t minCtr;
 
 extern freertos_twi_if twiPort;
+
+uint8_t updateCommParams = 0;
 
 void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len);
 void SendRespPkt(uint8_t *pkt, uint8_t len);
@@ -91,6 +96,12 @@ void vCommTask(void *pvParameters)
 					memset(respBuff,0,sizeof(respBuff));
 					respLen = 0;
 					commState = 0;
+
+					if(updateCommParams)
+					{
+						vCommInit();
+						updateCommParams = 0;
+					}
 					
 					usart_enable_rx(RS485_USART);
 					pdc_enable_transfer(rs485PdcBase, PERIPH_PTCR_RXTEN);
@@ -103,7 +114,9 @@ void vCommTask(void *pvParameters)
 
 void vCommInit(void)
 {
-    /* Init RS485 port with PDC support */
+    /* Update Local variables with EEPROM values */
+	UpdateRs485Params();
+	/* Init RS485 port with PDC support */
     InitRs485Pdc();
 }
 
@@ -240,6 +253,16 @@ void WriteMbusRegs(uint16_t *mbusBuff, uint8_t regAddr, uint8_t len)
 					WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_SLA, (uint8_t *)&mBusRegs[MBUS_REG_SLA], 1);
 				}
 				break;
+			case MBUS_REG_BAUDRATE:
+				/* Update EEPROM */
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_BAUDRATE, (uint8_t *)&mBusRegs[MBUS_REG_BAUDRATE], 1);
+				updateCommParams = 1;
+				break;
+			case MBUS_REG_PARITY:
+				/* Update EEPROM */
+				WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_PARITY, (uint8_t *)&mBusRegs[MBUS_REG_PARITY], 1);
+				updateCommParams = 1;
+				break;
             case MBUS_REG_OPMODE:
                 mBusRegs[MBUS_REG_MOTON] = 0;
                 minCtr = 0;
@@ -275,6 +298,35 @@ void SendRespPkt(uint8_t *pkt, uint8_t len)
 	/* 3.5 Char Wait Time */
 
 	usart_disable_tx(RS485_USART);
+}
+
+void UpdateRs485Params(void)
+{
+	switch(mBusRegs[MBUS_REG_BAUDRATE])
+	{
+		case 1:
+			rs485BaudRate = 4800;
+			break;
+		case 3:
+			rs485BaudRate = 19200;
+			break;
+		default:
+			rs485BaudRate = 9600;
+			break;
+	}
+	
+	switch(mBusRegs[MBUS_REG_PARITY])
+	{
+		case 1:
+			rs485Parity = US_MR_PAR_EVEN;
+			break;
+		case 2:
+			rs485Parity = US_MR_PAR_ODD;
+			break;
+		default:
+			rs485Parity = US_MR_PAR_NO;
+			break;
+	}
 }
 
 

@@ -74,13 +74,16 @@
 	#define MBUS_REG_CLMODEDIR		38
 	/* MODBUS Slave Address Register */
 	#define MBUS_REG_SLA			39
+	/* MODBUS Comm BuadRate 1 = 4800, 2 = 9600, 3 = 19200 */
+	#define MBUS_REG_BAUDRATE		40
+	/* MODBUS Comm Parity 0 = None, 1 = Even, 2 = Odd */
+	#define MBUS_REG_PARITY			41
 	
 	/* Tracker Operation Modes */
 	#define TRKR_OPMODE_AUTO		0
 	#define TRKR_OPMODE_MAN			1
 	#define TRKR_OPMODE_WINDSPD		2
 	#define TRKR_OPMODE_CLEAN		3
-
 
     #include <asf.h>
 	#include <string.h>
@@ -99,8 +102,10 @@
     void vCommTask(void *pvParameters);
     
     /* General Function Declarations */
-    /* Initialize Communication Variables */
+    /* Initialize Communication Port */
     void vCommInit(void);
+	/* Initialize Communication Variables from EEPROM */
+	void UpdateRs485Params(void);
     
 #endif
 

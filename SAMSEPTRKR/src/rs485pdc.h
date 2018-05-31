@@ -18,7 +18,7 @@
 
 #define RS485_USART					USART1
 #define RS485_USART_ID				ID_USART1
-#define RS485_BAUDRATE				9600
+//#define RS485_BAUDRATE				9600
 
 /* Size of the receive buffer and transmit buffer. */
 #define RS485_BUFFER_SIZE		150

@@ -26,8 +26,9 @@ float timeZone = 5.5f, dist = 5.0f, width = 2.0f;
 //Panels will track +/-pvAngleRng degrees. 
 float pvAngleRng = 43;
 float bkTrkParam1 = 0.028989f, bkTrkParam2 = 1.575f;
-uint8_t bkTrkFlg = 0;
+uint8_t bkTrkFlg = 0, bkAdjustFlag = 0, dispAdjustFlag = 0;
 volatile uint8_t minCtr = 0;
+float dispAngle = 0;
 
 #if defined(LOG_EN) || defined(DEBUG_EN)
 	char LogBuff[100];
@@ -208,6 +209,10 @@ void InitVars(void)
 			
 			/* MODBUS Slave Address Register */
 			mBusRegs[MBUS_REG_SLA] = memBuff[EE_REG_SLA - EE_REG_BASE];
+			/* MODBUS Baudrate Register */
+			mBusRegs[MBUS_REG_BAUDRATE] = memBuff[EE_REG_BAUDRATE - EE_REG_BASE];
+			/* MODBUS Parity Register */
+			mBusRegs[MBUS_REG_PARITY] = memBuff[EE_REG_PARITY - EE_REG_BASE];
 
 			/* Init local vars */
 			ptr = (uint16_t*)&lat;
@@ -286,6 +291,10 @@ void InitVars(void)
 			mBusRegs[MBUS_REG_CLMODEDIR] = 0;
 			/* MODBUS Slave Address Register */
 			mBusRegs[MBUS_REG_SLA] = 1;
+			/* MODBUS Baudrate Register */
+			mBusRegs[MBUS_REG_BAUDRATE] = 2;
+			/* MODBUS Parity Register */
+			mBusRegs[MBUS_REG_PARITY] = 0;
 
 			/* Update EEPROM */
 			ptr8 = (uint8_t *)&lat;
@@ -314,12 +323,11 @@ void InitVars(void)
 
 			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_CLMODEDIR, (uint8_t*)&mBusRegs[MBUS_REG_CLMODEDIR], 1);
 			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_SLA, (uint8_t*)&mBusRegs[MBUS_REG_SLA], 1);
-			//BaudRate, Parity
+			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_BAUDRATE, (uint8_t*)&mBusRegs[MBUS_REG_BAUDRATE], 1);
+			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_PARITY, (uint8_t*)&mBusRegs[MBUS_REG_PARITY], 1);
 
 			memBuff[0] = 0xAB;
 			WriteEEPROM(BOARD_TWI, AT24C08_ADDR, EE_REG_DEFCONFIG, memBuff, 1);
-
-			
 		}
 }
 
@@ -381,11 +389,11 @@ void PVTrack(void)
 		DSGetFullDateTo(twiPort, (uint16_t *)&mBusRegs[MBUS_REG_DAY], 50);
 	#endif
     
-    /* Clacluate PV Angle from time */
+    /* Calculate PV Angle from time */
     pvAngle = GetPvAngle();
-    ptr = (uint16_t*)&pvAngle;
-    mBusRegs[MBUS_REG_PVANGLEH] = ptr[1];
-    mBusRegs[MBUS_REG_PVANGLEL] = ptr[0];
+//     ptr = (uint16_t*)&pvAngle;
+//     mBusRegs[MBUS_REG_PVANGLEH] = ptr[1];
+//     mBusRegs[MBUS_REG_PVANGLEL] = ptr[0];
         
     #ifdef DEBUG_EN
         sprintf(LogBuff, "Targ Ang = ");
@@ -417,10 +425,18 @@ void PVTrack(void)
             #ifndef LOG_EN
                 GotoAngle(pvAngle);
             #endif
+			dispAngle = pvAngle;
+			dispAdjustFlag  = 1;
         }
         else
         {
             bkTrkFlg = 1;
+			/* This logic will work only when the device boots-up / restarts */
+			if(!dispAdjustFlag)
+			{
+				AdjustDispAngle();
+				dispAdjustFlag = 1;
+			}
         }
     }
     else
@@ -438,33 +454,49 @@ void PVTrack(void)
 					LogBuff[1] = '\n';
 					ConsoleWrite((uint8_t *)LogBuff, 2);
                 #endif
+				dispAngle = bkTrkAngle;
                 
                 /* Rotate Motor */
                 #ifndef LOG_EN
                     GotoAngle(bkTrkAngle);
                 #endif
+				if(!bkAdjustFlag)
+				{
+					bkAdjustFlag = 1;
+				}
             }
-            #ifdef LOG_EN
-                else
-                {
-                    sprintf(LogBuff,"NA\r\n");
-					ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
-                }
-            #endif
-        }
-        #ifdef LOG_EN
             else
             {
-                sprintf(LogBuff,"NA\r\n");
-				ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
+                if(bkAdjustFlag)
+				{
+					AdjustBktrkAngle();
+					bkAdjustFlag = 0;
+				}
+				#ifdef LOG_EN
+					sprintf(LogBuff,"NA\r\n");
+					ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
+				#endif
             }
-        #endif
+        }
+		#ifdef LOG_EN
+			else
+			{
+				sprintf(LogBuff,"NA\r\n");
+				ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
+			}
+		#endif
+        
         if(pvAngle>= -pvAngleRng && pvAngle <= pvAngleRng)
         {
             bkTrkFlg = 0;
         }
     }
-          
+    
+    ptr = (uint16_t*)&dispAngle;
+    mBusRegs[MBUS_REG_PVANGLEH] = ptr[1];
+    mBusRegs[MBUS_REG_PVANGLEL] = ptr[0];
+
+	      
     /* Clear any required flags */
     minCtr = 0;
     taskEXIT_CRITICAL();
@@ -972,6 +1004,53 @@ void CleaningMode(void)
 			GotoAngle(pvAngleRng);
 		}
 	}
+	
+	taskEXIT_CRITICAL();
+}
+
+void AdjustBktrkAngle(void)
+{
+	taskENTER_CRITICAL();
+
+	if(mBusRegs[MBUS_REG_HRS] > 5 && mBusRegs[MBUS_REG_HRS] < 9)
+	{
+		/* Adjust Angle to -MAXRANGE */
+		dispAngle = -pvAngleRng;
+		GotoAngle(-pvAngleRng);
+	}
+	else if(mBusRegs[MBUS_REG_HRS] > 16 && mBusRegs[MBUS_REG_HRS] < 20)
+	{
+		/* Adjust angle to 0 */
+		dispAngle = 0;
+		GotoAngle(0);
+	}
+	
+	taskEXIT_CRITICAL();
+}
+
+void AdjustDispAngle(void)
+{
+	taskENTER_CRITICAL();
+
+	if(((mBusRegs[MBUS_REG_HRS] >= 18) && (mBusRegs[MBUS_REG_HRS] <= 23)) || ((mBusRegs[MBUS_REG_HRS] >= 0) && (mBusRegs[MBUS_REG_HRS] <= 6))) 
+	{
+		/* Adjust angle to 0 */
+		dispAngle = 0;
+		GotoAngle(0);
+	}
+	else if((mBusRegs[MBUS_REG_HRS] >= 7) && (mBusRegs[MBUS_REG_HRS] <= 9)) 
+	{
+		/* Adjust Angle to -MAXRANGE */
+		dispAngle = -pvAngleRng;
+		GotoAngle(-pvAngleRng);
+	}
+	else if((mBusRegs[MBUS_REG_HRS] >= 15) && (mBusRegs[MBUS_REG_HRS] <= 17))
+	{
+		/* Adjust Angle to MAXRANGE */
+		dispAngle = pvAngleRng;
+		GotoAngle(pvAngleRng);
+	}
+
 	taskEXIT_CRITICAL();
 }
 

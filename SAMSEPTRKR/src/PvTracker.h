@@ -75,11 +75,14 @@
 	#define EE_REG_CLMODEDIR		(EE_REG_BASE + 32)
 	/* MODBUS Slave Address */
 	#define EE_REG_SLA				(EE_REG_BASE + 33)
-
+	/* MODBUS Comm BuadRate */
+	#define EE_REG_BAUDRATE			(EE_REG_BASE + 34)
+	/* MODBUS Comm */
+	#define EE_REG_PARITY			(EE_REG_BASE + 35)
 	/* Detect whether to load default configuration or not. 
 	*  Make sure that this is the last variable to be stored in the memory. 
 	*/
-	#define EE_REG_DEFCONFIG		(EE_REG_BASE + 34)
+	#define EE_REG_DEFCONFIG		(EE_REG_BASE + 36)
     
     #include "FreeRTOS.h"
 	#ifndef DS3231_USE_RTOS_API
@@ -122,8 +125,16 @@
     float GetPvBackTrackAngle(float pvAngle);
     float Rad(float deg);
     float Deg(float rad);
+	/* Maintains Panel angle to 0 degs. */
 	void WindSpeedMode(void);
+	/* Maintains Panel angle to +/- MAXRANGE degs. */
 	void CleaningMode(void);
+	/* 
+	* Adjusts the panel angle to -MAXRANGE / 0 degs after the 
+	* backtracking angle becomes out of range.
+	*/
+	void AdjustBktrkAngle(void);
+	void AdjustDispAngle(void);
     
 #endif
 

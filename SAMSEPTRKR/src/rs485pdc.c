@@ -12,12 +12,18 @@
  /* Pointer to PDC register base. */
  Pdc *rs485PdcBase;
 
+ /* This variable is modified in other files to match the required baudrate */
+ uint32_t rs485BaudRate = 9600;
+ /* This variable is modified in other files to match the required parity */
+ uint32_t rs485Parity = US_MR_PAR_NO;
+ 
+
  void InitRs485Pdc(void)
  {
-	 const sam_usart_opt_t usart_console_settings = {
-		 RS485_BAUDRATE,
+	 sam_usart_opt_t usart_console_settings = {
+		 rs485BaudRate,
 		 US_MR_CHRL_8_BIT,
-		 US_MR_PAR_NO,
+		 rs485Parity,
 		 US_MR_NBSTOP_1_BIT,
 		 US_MR_CHMODE_NORMAL,
 		 /* This field is only used in IrDA mode. */

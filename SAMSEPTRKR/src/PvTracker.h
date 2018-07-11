@@ -15,6 +15,7 @@
     
     //#define LOG_EN                 1
     //#define DEBUG_EN               1
+	//#define WRITE_RTC				1
     
     /* Accelerometer TWI Address */
     #define ICM_ADDR				0x69

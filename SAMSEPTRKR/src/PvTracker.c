@@ -56,7 +56,7 @@ void vPvTrackerTask(void *pvParameters)
     uint8_t status = 0;
 		
     #ifdef LOG_EN
-		sprintf(LogBuff, "Hrs,Mins,Secs,Tracking Mode,PvAngle,BkAngle\r\n");
+		sprintf(LogBuff, "Hrs,Mins,Secs,Tracking Mode,PvAngle,BkAngle,DispAngle\r\n");
 		ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
     #endif
 	
@@ -66,6 +66,20 @@ void vPvTrackerTask(void *pvParameters)
 		ICMInitialize(BOARD_TWI, ICM_ADDR);
 	#else
 		ICMInitializeTo(twiPort, ICM_ADDR, 50);
+	#endif
+
+	#ifdef WRITE_RTC
+		/* Hardcode RTC vaues for testing */
+		mBusRegs[MBUS_REG_SEC] = 0x00;
+		mBusRegs[MBUS_REG_MIN] = 0x00;
+		mBusRegs[MBUS_REG_HRS] = 0x05;
+		mBusRegs[MBUS_REG_DAY] = 0x01;
+		mBusRegs[MBUS_REG_DD] = 0x09;
+		mBusRegs[MBUS_REG_MM] = 0x07;
+		mBusRegs[MBUS_REG_YY] = 0x18;
+
+		DSSetTime(BOARD_TWI, (uint16_t *)&mBusRegs[MBUS_REG_SEC]);
+		DSSetFullDate(BOARD_TWI, (uint16_t *)&mBusRegs[MBUS_REG_DAY]);
 	#endif
 
 	/* Init RTC 1 min Alarm */
@@ -415,7 +429,7 @@ void PVTrack(void)
     if(!bkTrkFlg)
     {
         #ifdef LOG_EN
-            sprintf(LogBuff,"NA\r\n");
+            sprintf(LogBuff,"NA,");
 			ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
         #endif
         /* If Angle between +/- pvAngleRng deg */
@@ -426,16 +440,16 @@ void PVTrack(void)
                 GotoAngle(pvAngle);
             #endif
 			dispAngle = pvAngle;
-			dispAdjustFlag  = 1;
+			/*dispAdjustFlag  = 1;*/
         }
         else
         {
             bkTrkFlg = 1;
-			/* This logic will work only when the device boots-up / restarts */
-			if(!dispAdjustFlag)
+			/*if(!dispAdjustFlag)*/
 			{
+				/* Adjust disp angle to -/+43 or 0 degs. */
 				AdjustDispAngle();
-				dispAdjustFlag = 1;
+				/*dispAdjustFlag = 1;*/
 			}
         }
     }
@@ -450,9 +464,8 @@ void PVTrack(void)
             {
                 #ifdef LOG_EN
                     PrintFlt(bkTrkAngle);
-					LogBuff[0] = '\r';
-					LogBuff[1] = '\n';
-					ConsoleWrite((uint8_t *)LogBuff, 2);
+					LogBuff[0] = ',';
+					ConsoleWrite((uint8_t *)LogBuff, 1);
                 #endif
 				dispAngle = bkTrkAngle;
                 
@@ -473,19 +486,24 @@ void PVTrack(void)
 					bkAdjustFlag = 0;
 				}
 				#ifdef LOG_EN
-					sprintf(LogBuff,"NA\r\n");
+					sprintf(LogBuff,"NA,");
 					ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
 				#endif
             }
         }
-		#ifdef LOG_EN
-			else
+		else
+		{
+			if(bkAdjustFlag)
 			{
-				sprintf(LogBuff,"NA\r\n");
-				ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
+				AdjustBktrkAngle();
+				bkAdjustFlag = 0;
 			}
-		#endif
-        
+			#ifdef LOG_EN
+				sprintf(LogBuff,"NA,");
+				ConsoleWrite((uint8_t *)LogBuff, strlen(LogBuff));
+			#endif
+		}
+		
         if(pvAngle>= -pvAngleRng && pvAngle <= pvAngleRng)
         {
             bkTrkFlg = 0;
@@ -496,6 +514,12 @@ void PVTrack(void)
     mBusRegs[MBUS_REG_PVANGLEH] = ptr[1];
     mBusRegs[MBUS_REG_PVANGLEL] = ptr[0];
 
+	#ifdef LOG_EN
+		PrintFlt(dispAngle);
+		LogBuff[0] = '\r';
+		LogBuff[1] = '\n';
+		ConsoleWrite((uint8_t *)LogBuff, 2);
+	#endif
 	      
     /* Clear any required flags */
     minCtr = 0;
@@ -754,7 +778,7 @@ void TestCode(void)
     {
         int iVal, fVal;
 
-        if(val>0)
+        if(val>=0)
         {
             iVal = val;
             fVal = (val-iVal)*100;
@@ -1012,17 +1036,21 @@ void AdjustBktrkAngle(void)
 {
 	taskENTER_CRITICAL();
 
-	if(mBusRegs[MBUS_REG_HRS] > 5 && mBusRegs[MBUS_REG_HRS] < 9)
+	if((mBusRegs[MBUS_REG_HRS] >= 0x05) && (mBusRegs[MBUS_REG_HRS] <= 0x09))
 	{
 		/* Adjust Angle to -MAXRANGE */
 		dispAngle = -pvAngleRng;
-		GotoAngle(-pvAngleRng);
+		#ifndef LOG_EN
+			GotoAngle(-pvAngleRng);
+		#endif
 	}
-	else if(mBusRegs[MBUS_REG_HRS] > 16 && mBusRegs[MBUS_REG_HRS] < 20)
+	else if((mBusRegs[MBUS_REG_HRS] >= 0x16) && (mBusRegs[MBUS_REG_HRS] <= 0x20))
 	{
 		/* Adjust angle to 0 */
 		dispAngle = 0;
-		GotoAngle(0);
+		#ifndef LOG_EN
+			GotoAngle(0);
+		#endif
 	}
 	
 	taskEXIT_CRITICAL();
@@ -1032,23 +1060,29 @@ void AdjustDispAngle(void)
 {
 	taskENTER_CRITICAL();
 
-	if(((mBusRegs[MBUS_REG_HRS] >= 18) && (mBusRegs[MBUS_REG_HRS] <= 23)) || ((mBusRegs[MBUS_REG_HRS] >= 0) && (mBusRegs[MBUS_REG_HRS] <= 6))) 
+	if(((mBusRegs[MBUS_REG_HRS] >= 0x18) && (mBusRegs[MBUS_REG_HRS] <= 0x23)) || ((mBusRegs[MBUS_REG_HRS] >= 0x00) && (mBusRegs[MBUS_REG_HRS] <= 0x06))) 
 	{
 		/* Adjust angle to 0 */
 		dispAngle = 0;
-		GotoAngle(0);
+		#ifndef LOG_EN
+			GotoAngle(0);
+		#endif
 	}
-	else if((mBusRegs[MBUS_REG_HRS] >= 7) && (mBusRegs[MBUS_REG_HRS] <= 9)) 
+	else if((mBusRegs[MBUS_REG_HRS] >= 0x07) && (mBusRegs[MBUS_REG_HRS] <= 0x09)) 
 	{
 		/* Adjust Angle to -MAXRANGE */
 		dispAngle = -pvAngleRng;
-		GotoAngle(-pvAngleRng);
+		#ifndef LOG_EN
+			GotoAngle(-pvAngleRng);
+		#endif
 	}
-	else if((mBusRegs[MBUS_REG_HRS] >= 15) && (mBusRegs[MBUS_REG_HRS] <= 17))
+	else if((mBusRegs[MBUS_REG_HRS] >= 0x15) && (mBusRegs[MBUS_REG_HRS] <= 0x17))
 	{
 		/* Adjust Angle to MAXRANGE */
 		dispAngle = pvAngleRng;
-		GotoAngle(pvAngleRng);
+		#ifndef LOG_EN
+			GotoAngle(pvAngleRng);
+		#endif
 	}
 
 	taskEXIT_CRITICAL();
